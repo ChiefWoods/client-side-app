@@ -13,7 +13,7 @@
     --primary: 258, 58%, 42%;
     --primary-foreground: 210 40% 98%;
     /* --secondary: 210 40% 96.1%; */
-    --secondary: 249, 76%, 79%;
+    --secondary: 210, 40%, 96%;
     --secondary-foreground: 222.2 47.4% 11.2%;
     --tertiary: 267, 92%, 9%;
     --accent: 263, 100%, 97%;
@@ -57,7 +57,7 @@
     --chart-2: 160 60% 45%;
     --chart-3: 30 80% 55%;
     --chart-4: 280 65% 60%;
-    --chart-5: 340 75% 55%
+    --chart-5: 340 75% 55%;
   }
 }
 @layer base {
@@ -70,15 +70,4 @@
 }
 
 @layer components {
-  .chat-box {
-    @apply w-fit max-w-[200px] p-2 bg-primary-foreground flex flex-col gap-y-2 rounded-lg;
-
-    &.self {
-      @apply self-end items-end bg-accent text-[#512da8] rounded-br-none;
-    }
-
-    &.other {
-      @apply self-start items-start bg-[#F2F2F2] text-[#16022E] rounded-bl-none;
-    }
-  }
 }

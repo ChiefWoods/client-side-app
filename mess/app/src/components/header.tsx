@@ -1,68 +1,77 @@
 import { WalletMultiButton } from "@solana/wallet-adapter-react-ui";
-import { Loader2, MessageSquareMore, Search } from "lucide-react";
 import { Button, Form, FormControl, FormField, FormItem, Input } from "./ui";
-import { z } from "zod";
-import { PublicKey } from "@solana/web3.js";
-import { UseFormReturn } from "react-hook-form"
+import { MessageSquareMore, Search } from "lucide-react";
 import { useWallet } from "@solana/wallet-adapter-react";
-import { chatroomFormSchema } from "@/lib/formSchemas";
+import { getChatPDA } from "@/lib/helper";
+import { useForm } from "react-hook-form";
+import { searchFormSchema } from "@/lib/formSchemas";
+import { z } from "zod";
+import { zodResolver } from "@hookform/resolvers/zod";
 
-export default function Header({
-  chatroomForm,
-  setChatPDA,
-  isJoining,
-  setIsJoining
-}: {
-  chatroomForm: UseFormReturn<z.infer<typeof chatroomFormSchema>>,
-  setChatPDA: (pda: PublicKey) => void,
-  isJoining: boolean,
-  setIsJoining: (isJoining: boolean) => void
-}) {
+export default function Header({ setChatPDA }: { setChatPDA: (chatPDA: string) => void }) {
   const { publicKey } = useWallet();
 
-  function joinChatroom(values: z.infer<typeof chatroomFormSchema>) {
-    setIsJoining(true);
-    setChatPDA(new PublicKey(values.chatroom));
+  const searchForm = useForm<z.infer<typeof searchFormSchema>>({
+    resolver: zodResolver(searchFormSchema),
+    defaultValues: {
+      chatroom: ""
+    }
+  });
+
+  function showDefaultChatroom() {
+    if (publicKey) {
+      setChatPDA(getChatPDA(publicKey));
+    }
+  }
+
+  function joinChatroom(values: z.infer<typeof searchFormSchema>) {
+    setChatPDA(values.chatroom);
+    searchForm.reset();
   }
 
   return (
-    <header className="px-12 py-4 flex justify-between gap-x-4 items-center">
-      <div className="flex gap-x-4 items-center text-primary">
-        <MessageSquareMore size={32} />
-        <h1 className="font-semibold text-2xl">Mess</h1>
-      </div>
-      {publicKey && <Form {...chatroomForm}>
-        <form onSubmit={chatroomForm.handleSubmit(joinChatroom)} className="ml-auto flex gap-x-2">
+    <header className="flex justify-between items-center gap-x-4 pt-4">
+      <Button
+        variant={"ghost"}
+        className="hover:bg-transparent hover:text-primary text-primary flex gap-x-3 items-center pl-0"
+        onClick={showDefaultChatroom}
+      >
+        <MessageSquareMore
+          size={32}
+        />
+        <p className="text-3xl font-semibold hidden md:block">Mess</p>
+      </Button>
+      <Form {...searchForm}>
+        <form
+          className="flex gap-x-2 ml-auto"
+          onSubmit={searchForm.handleSubmit(joinChatroom)}
+        >
           <FormField
-            control={chatroomForm.control}
+            control={searchForm.control}
             name="chatroom"
             render={({ field }) => (
               <FormItem>
                 <FormControl>
                   <Input
-                    type="text"
-                    {...field}
                     placeholder="Enter chatroom address"
-                    required
-                    disabled={isJoining}
-                    className="mt-auto min-w-[250px]" />
+                    {...field}
+                    disabled={searchForm.formState.isSubmitting}
+                  />
                 </FormControl>
               </FormItem>
             )}
           />
           <Button
-            className="flex aspect-square p-2 text-primary hover:bg-tertiary"
+            className="hover:bg-tertiary p-2 aspect-square"
+            size={"icon"}
             type="submit"
-            disabled={isJoining}>
-            {!isJoining
-              ? <Search size={20} color="#fff" />
-              : <Loader2
-                size={20}
-                className="animate-spin text-secondary" />}
+            disabled={searchForm.formState.isSubmitting}
+          >
+            <Search size={20} />
           </Button>
         </form>
-      </Form>}
+      </Form>
       <WalletMultiButton />
-    </header >
+    </header>
   )
 }

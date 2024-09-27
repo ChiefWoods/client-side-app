@@ -1,68 +1,92 @@
 import { useConnection, useWallet } from "@solana/wallet-adapter-react";
-import { Program } from "@coral-xyz/anchor";
-import { useEffect, useState } from "react";
-import type { Mess } from "@/types/mess";
-import { PublicKey, Transaction } from "@solana/web3.js";
-import { Message, MessageGroup } from "@/types/message";
 import { Button, Form, FormControl, FormField, FormItem, Input } from "./ui";
-import { Copy, CopyCheck, Loader2, SendHorizonal } from "lucide-react";
+import { Copy, CopyCheck, LoaderCircle, Plus, SendHorizonal } from "lucide-react";
+import { Program } from "@coral-xyz/anchor";
+import { Mess } from "@/types/mess";
+import { useEffect, useState } from "react";
+import { Message, MessageGroup } from "@/types/message";
+import { truncateAddress } from "@/lib/helper";
 import { z } from "zod";
-import { zodResolver } from "@hookform/resolvers/zod"
-import { useForm } from "react-hook-form"
-import { messageSchema } from "@/lib/formSchemas";
+import { messageFormSchema } from "@/lib/formSchemas";
+import { useForm } from "react-hook-form";
+import { zodResolver } from "@hookform/resolvers/zod";
+import { Transaction } from "@solana/web3.js";
+import { Spinner } from ".";
 
 export default function Chat({
   program,
   chatPDA,
-  messages,
-  setMessages,
-  errorMessage,
-  isLimitReached,
-  isJoining
+  isLoadingChat,
+  setIsLoadingChat,
 }: {
-  program: Program<Mess>,
-  chatPDA: PublicKey,
-  messages: Message[],
-  setMessages: (messages: Message[]) => void,
-  errorMessage: string,
-  isLimitReached: boolean,
-  isJoining: boolean
+  program: Program<Mess> | null,
+  chatPDA: string | null,
+  isLoadingChat: boolean,
+  setIsLoadingChat: (isLoadingChat: boolean) => void
 }) {
+  const { publicKey, connecting, sendTransaction } = useWallet();
   const { connection } = useConnection();
-  const { publicKey, sendTransaction } = useWallet();
-  const [messageGroups, setMessageGroups] = useState<MessageGroup[]>([]);
-  const [isCopied, setIsCopied] = useState(false);
-  const [isSending, setIsSending] = useState(false);
+  const [doesChatroomExist, setDoesChatroomExist] = useState<boolean>(false);
+  const [messages, setMessages] = useState<Message[]>([]);
+  const [messageGroup, setMessageGroup] = useState<MessageGroup[]>([]);
+  const [isCopied, setIsCopied] = useState<boolean>(false);
+  const [isCreatingChatroom, setIsCreatingChatroom] = useState<boolean>(false);
 
-  const messageForm = useForm<z.infer<typeof messageSchema>>({
-    resolver: zodResolver(messageSchema),
+  const messageForm = useForm<z.infer<typeof messageFormSchema>>({
+    resolver: zodResolver(messageFormSchema),
     defaultValues: {
-      message: "",
+      message: ""
     }
   })
 
   function copyChatPDA() {
-    if (!isCopied) {
+    if (!isCopied && chatPDA) {
       navigator.clipboard.writeText(chatPDA.toString());
       setIsCopied(true);
       setTimeout(() => setIsCopied(false), 3000);
     }
   }
 
-  function truncateAddress(address: string) {
-    return `${address.slice(0, 4)}....${address.slice(-4)}`;
+  async function createChatroom() {
+    if (program && chatPDA && publicKey) {
+      setIsCreatingChatroom(true);
+
+      try {
+        const inst = await program.methods
+          .init()
+          .accounts({
+            chat: chatPDA,
+            payer: publicKey,
+          })
+          .instruction();
+
+        const signature = await sendTransaction(new Transaction().add(inst), connection);
+
+        const { blockhash, lastValidBlockHeight } = await connection.getLatestBlockhash();
+
+        await connection.confirmTransaction({
+          signature,
+          blockhash,
+          lastValidBlockHeight,
+        });
+
+        setDoesChatroomExist(true);
+      } catch (err) {
+        console.error(err)
+      }
+
+      setIsCreatingChatroom(false);
+    }
   }
 
-  async function sendMessage(values: z.infer<typeof messageSchema>) {
-    if (publicKey) {
-      setIsSending(true);
-
+  async function sendMessage(values: z.infer<typeof messageFormSchema>) {
+    if (program && chatPDA && publicKey) {
       try {
         const inst = await program.methods
           .send(values.message)
           .accounts({
             chat: chatPDA,
-            sender: publicKey
+            sender: publicKey,
           })
           .instruction();
 
@@ -77,120 +101,182 @@ export default function Chat({
         });
 
         setMessages([...messages, { sender: publicKey, text: values.message }]);
+        messageForm.reset();
       } catch (err) {
-        console.error(err)
+        console.error(err);
       }
-
-      setIsSending(false);
-      messageForm.reset();
     }
   }
 
   useEffect(() => {
-    if (messages.length) {
-      const newMessageGroups: MessageGroup[] = [];
-      let currentSender: string = "";
-      let currentGroup: string[] = [];
+    async function fetchData() {
+      if (program && chatPDA) {
+        setIsLoadingChat(true);
 
-      messages.forEach(({ sender, text }, i) => {
-        if (currentSender === sender.toString()) {
-          currentGroup.push(text);
-        } else {
-          if (currentGroup.length) {
-            newMessageGroups.push({ sender: currentSender, texts: currentGroup });
-          }
-
-          currentSender = sender.toString();
-          currentGroup = [text];
+        try {
+          const { messages } = await program.account.chat.fetch(chatPDA);
+          setMessages(messages);
+          setDoesChatroomExist(true);
+        } catch (err) {
+          console.error(err)
+          setMessages([]);
+          setDoesChatroomExist(false);
         }
 
-        if (i === messages.length - 1) {
-          newMessageGroups.push({ sender: currentSender, texts: currentGroup });
-        }
-      })
-
-      setMessageGroups(newMessageGroups);
+        setIsLoadingChat(false);
+      }
     }
-  }, [messages])
+
+    fetchData()
+  }, [program, chatPDA, setIsLoadingChat])
+
+  useEffect(() => {
+    async function fetchData() {
+      if (program && chatPDA) {
+        try {
+          const messageGroup: MessageGroup[] = [];
+          let currentSender: string = "";
+          let currentGroup: string[] = [];
+
+          messages.forEach(({ sender, text }, i) => {
+            if (currentSender === sender.toBase58()) {
+              currentGroup.push(text);
+            } else {
+              if (currentGroup.length) {
+                messageGroup.push({ sender: currentSender, texts: currentGroup });
+              }
+
+              currentSender = sender.toBase58();
+              currentGroup = [text];
+            }
+
+            if (i === messages.length - 1) {
+              messageGroup.push({ sender: currentSender, texts: currentGroup });
+            }
+          })
+
+          setMessageGroup(messageGroup);
+        } catch (err) {
+          console.error(err);
+          setMessageGroup([]);
+        }
+      }
+    }
+
+    fetchData();
+  }, [program, chatPDA, messages])
+
+  useEffect(() => {
+    if (chatPDA && doesChatroomExist) {
+      document.title = `Mess | ${truncateAddress(chatPDA)}`;
+    }
+  }, [chatPDA, doesChatroomExist])
 
   return (
-    <main className={`h-full flex justify-center px-12 py-4 ${publicKey ? "" : "items-center"}`}>
-      {errorMessage ? (
-        <h2 className="font-semibold text-2xl text-primary">{errorMessage}</h2>
-      ) :
-        publicKey ? (
-          <section className="w-full h-full flex flex-col justify-center gap-y-4 text-primary">
-            <div className="flex gap-x-4 justify-start items-center min-h-[40px]">
-              {chatPDA && !isJoining && <>
-                <h1 className="font-semibold text-3xl text-start">Chatroom : {truncateAddress(chatPDA.toString())}</h1>
-                <Button
-                  variant={"link"}
-                  onClick={copyChatPDA}
-                  className="w-fit h-fit p-2">
-                  {!isCopied
-                    ? <Copy size={20} />
-                    : <CopyCheck
-                      size={20}
-                      color="#22c55e" />}
-                </Button>
-              </>}
-            </div>
-            <section className={`h-full flex flex-col gap-y-2 p-4 overflow-y-scroll ${messages.length ? "items-center justify-center" : "justify-center"} ${isJoining ? "justify-center" : ""}`}>
-              {isJoining ? (
-                <Loader2
-                  size={32}
-                  className="animate-spin text-secondary" />
-              ) : messageGroups.length ? messageGroups.map(({ sender, texts }, i) => {
-                const isSelf = sender === publicKey.toString();
-
-                return (
-                  <div key={i} className={`chat-box ${isSelf ? "self" : "other"}`}>
-                    {texts.map((text, j) => <p key={j}>{text}</p>)}
-                    {!isSelf && <p className="text-[0.6rem]">{truncateAddress(sender)}</p>}
-                  </div>
-                )
-              }) : (
-                <h2 className="font-semibold text-2xl text-primary text-center">No messages yet</h2>
-              )}
-            </section>
-            <Form {...messageForm}>
-              <form
-                onSubmit={messageForm.handleSubmit(sendMessage)}
-                className="flex gap-x-2">
-                <FormField
-                  control={messageForm.control}
-                  name="message"
-                  render={({ field }) => (
-                    <FormItem className="w-full">
-                      <FormControl>
-                        <Input
-                          type="text"
-                          {...field}
-                          placeholder={isLimitReached ? "Maximum messages limit reached" : "Type a message"}
-                          required
-                          disabled={isLimitReached || isSending} />
-                      </FormControl>
-                    </FormItem>
-                  )}
-                />
-                <Button
-                  className="flex aspect-square p-2 text-primary hover:bg-tertiary"
-                  type="submit"
-                  disabled={isSending}>
-                  {!isSending
-                    ? <SendHorizonal
-                      size={20}
-                      color="#fff" />
-                    : <Loader2
-                      size={20}
-                      className="animate-spin text-secondary" />}
-                </Button>
-              </form>
-            </Form>
-          </section>
+    <>
+      <main className="flex flex-col gap-y-2 justify-center items-center grow h-full">
+        {connecting ? (
+          <p className="text-2xl text-center font-semibold text-primary">Connecting...</p>
         ) : (
-          <h2 className="font-semibold text-2xl text-primary">Connect Your Wallet</h2>
+          publicKey ? (
+            isLoadingChat ? (
+              <Spinner />
+            ) : (
+              doesChatroomExist ? (
+                <>
+                  <div className="w-full flex gap-x-2 items-center">
+                    <h2 className="text-3xl text-primary font-semibold">Chatroom : {truncateAddress(chatPDA!)}</h2>
+                    <Button
+                      variant={"ghost"}
+                      size={"icon"}
+                      onClick={copyChatPDA}
+                      className="aspect-square bg-transparent hover:bg-transparent"
+                    >
+                      {isCopied ? (
+                        <CopyCheck className="text-green-500 hover:text-green-500" />
+                      ) : (
+                        <Copy className="text-primary hover:text-primary" />
+                      )}
+                    </Button>
+                  </div>
+                  <section className="flex flex-col gap-y-2 justify-start items-center w-full overflow-y-auto grow h-0">
+                    {messages.length ? messageGroup.map(({ sender, texts }, i) => {
+                      const isSelf = sender === publicKey.toBase58();
+
+                      return (
+                        <div
+                          key={i}
+                          className={`w-fit max-w-[200px] p-2 bg-primary-foreground flex flex-col gap-y-2 rounded-lg
+                          ${isSelf
+                              ? "self-end items-end bg-accent text-primary rounded-br-none mr-4"
+                              : "self-start items-start bg-primary-foreground text-tertiary rounded-bl-none"}`}
+                        >
+                          {texts.map((text, j) => <p key={j}>{text}</p>)}
+                          {!isSelf && <p className="text-[0.6rem]">{truncateAddress(sender)}</p>}
+                        </div>
+                      )
+                    }) : (
+                      <p className="text-2xl text-center font-semibold text-primary">No messages sent.</p>
+                    )}
+                  </section>
+                </>
+              ) : (
+                <div className="flex flex-col items-center gap-y-3">
+                  <p className="text-2xl text-center font-semibold text-primary">You don't own a chatroom.</p>
+                  <Button
+                    className="w-fit hover:bg-tertiary font-semibold flex gap-x-2 items-center"
+                    onClick={createChatroom}
+                    disabled={isCreatingChatroom}
+                  >
+                    {isCreatingChatroom ? (
+                      <LoaderCircle size={16} className="animate-spin" />
+                    ) : (
+                      <Plus size={16} />
+                    )}
+                    Create Chatroom
+                  </Button>
+                </div>
+              )
+            )
+          ) : (
+            <p className="text-2xl text-center font-semibold text-primary">Connect Your Wallet</p>
+          )
         )}
-    </main>
+      </main>
+      {publicKey && doesChatroomExist && !isLoadingChat && <Form {...messageForm}>
+        <form
+          className="flex w-full gap-x-2 pb-4"
+          onSubmit={messageForm.handleSubmit(sendMessage)}
+        >
+          <FormField
+            control={messageForm.control}
+            name="message"
+            render={({ field }) => (
+              <FormItem className="w-full">
+                <FormControl>
+                  <Input
+                    placeholder="Type a message"
+                    {...field}
+                    disabled={messageForm.formState.isSubmitting || messages.length >= 20}
+                  />
+                </FormControl>
+              </FormItem>
+            )}
+          />
+          <Button
+            className="hover:bg-tertiary p-2 aspect-square"
+            size={"icon"}
+            type="submit"
+            disabled={messageForm.formState.isSubmitting || messages.length >= 20}
+          >
+            {messageForm.formState.isSubmitting ? (
+              <LoaderCircle size={20} className="animate-spin" />
+            ) : (
+              <SendHorizonal size={20} />
+            )}
+          </Button>
+        </form>
+      </Form>}
+    </>
   )
 }
