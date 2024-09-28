@@ -3,7 +3,7 @@ import { Button, Form, FormControl, FormField, FormItem, Input } from "./ui";
 import { Copy, CopyCheck, LoaderCircle, Plus, SendHorizonal } from "lucide-react";
 import { Program } from "@coral-xyz/anchor";
 import { Mess } from "@/types/mess";
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { Message, MessageGroup } from "@/types/message";
 import { truncateAddress } from "@/lib/helper";
 import { z } from "zod";
@@ -31,6 +31,7 @@ export default function Chat({
   const [messageGroup, setMessageGroup] = useState<MessageGroup[]>([]);
   const [isCopied, setIsCopied] = useState<boolean>(false);
   const [isCreatingChatroom, setIsCreatingChatroom] = useState<boolean>(false);
+  const chatSection = useRef<HTMLDivElement>(null);
 
   const messageForm = useForm<z.infer<typeof messageFormSchema>>({
     resolver: zodResolver(messageFormSchema),
@@ -102,6 +103,12 @@ export default function Chat({
 
         setMessages([...messages, { sender: publicKey, text: values.message }]);
         messageForm.reset();
+        messageForm.setFocus("message");
+
+        chatSection.current?.scrollTo({
+          top: chatSection.current.scrollHeight,
+          behavior: "smooth"
+        });    
       } catch (err) {
         console.error(err);
       }
@@ -165,6 +172,15 @@ export default function Chat({
 
     fetchData();
   }, [program, chatPDA, messages])
+
+  useEffect(() => {
+    if (messageGroup.length) {
+      chatSection.current?.scrollTo({
+        top: chatSection.current.scrollHeight,
+        behavior: "smooth"
+      });
+    }
+  }, [messageGroup])
 
   useEffect(() => {
     let interval: NodeJS.Timeout | null = null;
@@ -231,7 +247,10 @@ export default function Chat({
                       )}
                     </Button>
                   </div>
-                  <section className="flex flex-col gap-y-2 justify-start items-center w-full overflow-y-auto grow h-0">
+                  <section
+                    className={`flex flex-col gap-y-2 items-center w-full overflow-y-auto grow h-0 ${messages.length ? "justify-start": "justify-center"}`}
+                    ref={chatSection}
+                  >
                     {messages.length ? messageGroup.map(({ sender, texts }, i) => {
                       const isSelf = sender === publicKey.toBase58();
 
@@ -287,7 +306,7 @@ export default function Chat({
               <FormItem className="w-full">
                 <FormControl>
                   <Input
-                    placeholder="Type a message"
+                    placeholder={messages.length >= 20 ? "Maximum chat length reached" : "Type a message"}
                     {...field}
                     disabled={messageForm.formState.isSubmitting || messages.length >= 20}
                   />
