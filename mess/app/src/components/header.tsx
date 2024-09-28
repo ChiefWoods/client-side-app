@@ -41,36 +41,38 @@ export default function Header({ setChatPDA }: { setChatPDA: (chatPDA: string) =
         />
         <p className="text-3xl font-semibold hidden md:block">Mess</p>
       </Button>
-      <Form {...searchForm}>
-        <form
-          className="flex gap-x-2 ml-auto"
-          onSubmit={searchForm.handleSubmit(joinChatroom)}
-        >
-          <FormField
-            control={searchForm.control}
-            name="chatroom"
-            render={({ field }) => (
-              <FormItem>
-                <FormControl>
-                  <Input
-                    placeholder="Enter chatroom address"
-                    {...field}
-                    disabled={searchForm.formState.isSubmitting}
-                  />
-                </FormControl>
-              </FormItem>
-            )}
-          />
-          <Button
-            className="hover:bg-tertiary p-2 aspect-square"
-            size={"icon"}
-            type="submit"
-            disabled={searchForm.formState.isSubmitting}
+      {publicKey && (
+        <Form {...searchForm}>
+          <form
+            className="flex gap-x-2 ml-auto"
+            onSubmit={searchForm.handleSubmit(joinChatroom)}
           >
-            <Search size={20} />
-          </Button>
-        </form>
-      </Form>
+            <FormField
+              control={searchForm.control}
+              name="chatroom"
+              render={({ field }) => (
+                <FormItem>
+                  <FormControl>
+                    <Input
+                      placeholder="Enter chatroom address"
+                      {...field}
+                      disabled={searchForm.formState.isSubmitting}
+                    />
+                  </FormControl>
+                </FormItem>
+              )}
+            />
+            <Button
+              className="hover:bg-tertiary p-2 aspect-square"
+              size={"icon"}
+              type="submit"
+              disabled={searchForm.formState.isSubmitting}
+            >
+              <Search size={20} />
+            </Button>
+          </form>
+        </Form>
+      )}
       <WalletMultiButton />
     </header>
   )
