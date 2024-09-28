@@ -167,6 +167,36 @@ export default function Chat({
   }, [program, chatPDA, messages])
 
   useEffect(() => {
+    let interval: NodeJS.Timeout | null = null;
+
+    async function fetchData() {
+      if (program && chatPDA) {
+        interval = setInterval(async () => {
+          try {
+            const { messages } = await program.account.chat.fetch(chatPDA);
+            setMessages(messages);
+
+            if (messages.length >= 20) {
+              clearInterval(interval!);
+            }
+          } catch (err) {
+            console.error(err);
+            setMessages([]);
+          }
+        }, 5000);
+      }
+    }
+
+    fetchData()
+
+    return () => {
+      if (interval) {
+        clearInterval(interval);
+      }
+    }
+  }, [program, chatPDA])
+
+  useEffect(() => {
     if (chatPDA && doesChatroomExist) {
       document.title = `Mess | ${truncateAddress(chatPDA)}`;
     }
