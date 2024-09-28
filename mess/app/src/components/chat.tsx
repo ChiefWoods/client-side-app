@@ -199,6 +199,8 @@ export default function Chat({
   useEffect(() => {
     if (chatPDA && doesChatroomExist) {
       document.title = `Mess | ${truncateAddress(chatPDA)}`;
+    } else {
+      document.title = "Mess";
     }
   }, [chatPDA, doesChatroomExist])
 
@@ -212,10 +214,10 @@ export default function Chat({
             isLoadingChat ? (
               <Spinner />
             ) : (
-              doesChatroomExist ? (
+              chatPDA && doesChatroomExist ? (
                 <>
                   <div className="w-full flex gap-x-2 items-center">
-                    <h2 className="text-3xl text-primary font-semibold">Chatroom : {truncateAddress(chatPDA!)}</h2>
+                    <h2 className="text-3xl text-primary font-semibold">Chatroom : {truncateAddress(chatPDA)}</h2>
                     <Button
                       variant={"ghost"}
                       size={"icon"}

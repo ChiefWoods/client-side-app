@@ -24,6 +24,8 @@ export default function App() {
   useEffect(() => {
     if (publicKey) {
       setChatPDA(getChatPDA(publicKey));
+    } else {
+      setChatPDA(null);
     }
   }, [publicKey])
 
