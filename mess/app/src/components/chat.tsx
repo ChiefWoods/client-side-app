@@ -11,7 +11,7 @@ import { messageFormSchema } from "@/lib/formSchemas";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { Transaction } from "@solana/web3.js";
-import { Spinner } from ".";
+import { Spinner, Text } from ".";
 
 export default function Chat({
   program,
@@ -206,7 +206,7 @@ export default function Chat({
     <>
       <main className="flex flex-col gap-y-2 justify-center items-center grow h-full">
         {connecting ? (
-          <p className="text-2xl text-center font-semibold text-primary">Connecting...</p>
+          <Text content="Connecting..." />
         ) : (
           publicKey ? (
             isLoadingChat ? (
@@ -246,13 +246,13 @@ export default function Chat({
                         </div>
                       )
                     }) : (
-                      <p className="text-2xl text-center font-semibold text-primary">No messages sent.</p>
+                      <Text content="No messages sent." />
                     )}
                   </section>
                 </>
               ) : (
                 <div className="flex flex-col items-center gap-y-3">
-                  <p className="text-2xl text-center font-semibold text-primary">You don't own a chatroom.</p>
+                  <Text content="You don't own a chatroom." />
                   <Button
                     className="w-fit hover:bg-tertiary font-semibold flex gap-x-2 items-center"
                     onClick={createChatroom}
@@ -269,7 +269,7 @@ export default function Chat({
               )
             )
           ) : (
-            <p className="text-2xl text-center font-semibold text-primary">Connect Your Wallet</p>
+            <Text content="Connect Your Wallet" />
           )
         )}
       </main>
