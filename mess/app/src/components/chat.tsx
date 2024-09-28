@@ -55,7 +55,7 @@ export default function Chat({
       try {
         const inst = await program.methods
           .init()
-          .accounts({
+          .accountsPartial({
             chat: chatPDA,
             payer: publicKey,
           })
