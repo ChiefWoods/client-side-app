@@ -27,4 +27,7 @@ export const messageFormSchema = z.object({
     .min(1, {
       message: "Message cannot be empty."
     })
+    .max(256, {
+      message: "Message cannot exceed 256 characters."
+    })
 });
