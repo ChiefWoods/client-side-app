@@ -7,7 +7,7 @@
     "dev": "vite",
     "build": "tsc -b --clean && vite build",
     "lint": "eslint .",
-    "preview": "vite preview"
+    "preview": "vite preview"    
   },
   "dependencies": {
     "@coral-xyz/anchor": "^0.30.1",
