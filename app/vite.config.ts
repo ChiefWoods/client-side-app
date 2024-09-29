@@ -16,5 +16,6 @@ export default defineConfig({
         Buffer: ['buffer', 'Buffer']
       })],
     },
-  }
+  },
+  base: "./",
 })
