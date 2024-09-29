@@ -1,6 +1,7 @@
 import path from "path"
 import react from "@vitejs/plugin-react-swc"
 import { defineConfig } from "vite"
+import inject from '@rollup/plugin-inject'
 
 export default defineConfig({
   plugins: [react()],
@@ -9,4 +10,11 @@ export default defineConfig({
       "@": path.resolve(__dirname, "./src"),
     },
   },
+  build: {
+    rollupOptions: {
+      plugins: [inject({
+        Buffer: ['buffer', 'Buffer']
+      })],
+    },
+  }
 })
