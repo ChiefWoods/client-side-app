@@ -10,7 +10,7 @@ import { z } from "zod";
 import { messageFormSchema } from "@/lib/formSchemas";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { Transaction } from "@solana/web3.js";
+import { PublicKey, Transaction } from "@solana/web3.js";
 import { Spinner, Text } from ".";
 
 export default function Chat({
@@ -108,7 +108,7 @@ export default function Chat({
         chatSection.current?.scrollTo({
           top: chatSection.current.scrollHeight,
           behavior: "smooth"
-        });    
+        });
       } catch (err) {
         console.error(err);
       }
@@ -183,34 +183,34 @@ export default function Chat({
   }, [messageGroup])
 
   useEffect(() => {
-    let interval: NodeJS.Timeout | null = null;
+    let subscriptionId: number | null = null;
 
     async function fetchData() {
       if (program && chatPDA) {
-        interval = setInterval(async () => {
+        subscriptionId = connection.onAccountChange(new PublicKey(chatPDA), async () => {
           try {
             const { messages } = await program.account.chat.fetch(chatPDA);
             setMessages(messages);
 
             if (messages.length >= 20) {
-              clearInterval(interval!);
+              connection.removeAccountChangeListener(subscriptionId!);
             }
           } catch (err) {
             console.error(err);
             setMessages([]);
           }
-        }, 5000);
+        });
       }
     }
 
     fetchData()
 
     return () => {
-      if (interval) {
-        clearInterval(interval);
+      if (subscriptionId) {
+        connection.removeAccountChangeListener(subscriptionId);
       }
     }
-  }, [program, chatPDA])
+  }, [program, chatPDA, connection])
 
   useEffect(() => {
     if (chatPDA && doesChatroomExist) {
@@ -248,7 +248,7 @@ export default function Chat({
                     </Button>
                   </div>
                   <section
-                    className={`flex flex-col gap-y-2 items-center w-full overflow-y-auto grow h-0 ${messages.length ? "justify-start": "justify-center"}`}
+                    className={`flex flex-col gap-y-2 items-center w-full overflow-y-auto grow h-0 ${messages.length ? "justify-start" : "justify-center"}`}
                     ref={chatSection}
                   >
                     {messages.length ? messageGroup.map(({ sender, texts }, i) => {
