@@ -233,7 +233,7 @@ export default function Chat({
               chatPDA && doesChatroomExist ? (
                 <>
                   <div className="w-full flex gap-x-2 items-center">
-                    <h2 className="text-2xl md:text-3xl text-primary font-semibold">Chatroom : {truncateAddress(chatPDA)}</h2>
+                    <h2 className="text-2xl sm:text-3xl text-primary font-semibold">Chatroom : {truncateAddress(chatPDA)}</h2>
                     <Button
                       variant={"ghost"}
                       size={"icon"}
