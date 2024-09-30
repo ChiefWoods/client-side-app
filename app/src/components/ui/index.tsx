@@ -9,6 +9,12 @@ import {
   FormLabel,
   FormMessage,
 } from "./form"
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger,
+} from "./tooltip"
 
 export {
   Input,
@@ -20,4 +26,8 @@ export {
   FormItem,
   FormLabel,
   FormMessage,
+  Tooltip,
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger,
 }

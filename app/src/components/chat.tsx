@@ -1,5 +1,5 @@
 import { useConnection, useWallet } from "@solana/wallet-adapter-react";
-import { Button, Form, FormControl, FormField, FormItem, Input } from "./ui";
+import { Button, Form, FormControl, FormField, FormItem, Input, Tooltip, TooltipContent, TooltipProvider } from "./ui";
 import { Copy, CopyCheck, LoaderCircle, Plus, SendHorizonal } from "lucide-react";
 import { Program } from "@coral-xyz/anchor";
 import { Mess } from "@/types/mess";
@@ -12,6 +12,7 @@ import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { PublicKey, Transaction } from "@solana/web3.js";
 import { Spinner, Text } from ".";
+import { TooltipTrigger } from "@radix-ui/react-tooltip";
 
 export default function Chat({
   program,
@@ -263,7 +264,16 @@ export default function Chat({
                               : "self-start items-start bg-primary-foreground text-tertiary rounded-bl-none"}`}
                         >
                           {texts.map((text, j) => <p key={j} className="max-w-full">{text}</p>)}
-                          {!isSelf && <p className="text-[0.6rem]">{truncateAddress(sender)}</p>}
+                          {!isSelf && (
+                            <TooltipProvider>
+                              <Tooltip>
+                                <TooltipTrigger asChild>
+                                  <p className="text-[0.6rem]">{truncateAddress(sender)}</p>
+                                </TooltipTrigger>
+                                <TooltipContent>{sender}</TooltipContent>
+                              </Tooltip>
+                            </TooltipProvider>
+                          )}
                         </div>
                       )
                     }) : (
