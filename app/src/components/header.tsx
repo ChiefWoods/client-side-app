@@ -12,7 +12,7 @@ import { SearchBar } from ".";
 
 export default function Header({ setChatPDA }: { setChatPDA: (chatPDA: string) => void }) {
   const { publicKey } = useWallet();
-  const [isMobile, setIsMobile] = useState<boolean>(false);
+  const [isMobile, setIsMobile] = useState<boolean>(window.innerWidth < 640);
   const [isSearchExpanded, setIsSearchExpanded] = useState<boolean>(false);
 
   const searchForm = useForm<z.infer<typeof searchFormSchema>>({
@@ -31,16 +31,12 @@ export default function Header({ setChatPDA }: { setChatPDA: (chatPDA: string) =
     searchForm.reset();
   }
 
-  function expandSearchBar() {
-    setIsSearchExpanded(true);
-  }
-
   useEffect(() => {
     function handleResize() {
       const belowBreakpoint = window.innerWidth < 640;
       setIsMobile(belowBreakpoint);
 
-      if (belowBreakpoint !== isMobile) {
+      if (!belowBreakpoint) {
         setIsSearchExpanded(false);
       }
     }
@@ -50,7 +46,7 @@ export default function Header({ setChatPDA }: { setChatPDA: (chatPDA: string) =
     window.addEventListener("resize", handleResize);
 
     return () => window.removeEventListener("resize", handleResize);
-  }, []);
+  }, [isMobile]);
 
   useEffect(() => {
     if (isSearchExpanded) {
@@ -81,7 +77,6 @@ export default function Header({ setChatPDA }: { setChatPDA: (chatPDA: string) =
                 onClick={() => setIsSearchExpanded(false)}
               >
                 <ArrowLeft size={20} />
-                <p className="text-3xl font-semibold hidden md:block">Mess</p>
               </Button>
               <SearchBar
                 joinChatroom={joinChatroom}
@@ -93,7 +88,7 @@ export default function Header({ setChatPDA }: { setChatPDA: (chatPDA: string) =
               variant={"ghost"}
               size={"icon"}
               className="hover:bg-transparent hover:text-primary text-primary flex gap-x-3"
-              onClick={expandSearchBar}
+              onClick={() => setIsSearchExpanded(true)}
             >
               <Search size={20} />
               <p className="text-3xl font-semibold hidden md:block">Mess</p>
