@@ -257,12 +257,12 @@ export default function Chat({
                       return (
                         <div
                           key={i}
-                          className={`w-fit max-w-[200px] p-2 bg-primary-foreground flex flex-col gap-y-2 rounded-lg
+                          className={`w-fit max-w-[200px] sm:max-w-[400px] p-2 bg-primary-foreground flex flex-col gap-y-2 rounded-lg break-words
                           ${isSelf
                               ? "self-end items-end bg-accent text-primary rounded-br-none mr-4"
                               : "self-start items-start bg-primary-foreground text-tertiary rounded-bl-none"}`}
                         >
-                          {texts.map((text, j) => <p key={j}>{text}</p>)}
+                          {texts.map((text, j) => <p key={j} className="max-w-full">{text}</p>)}
                           {!isSelf && <p className="text-[0.6rem]">{truncateAddress(sender)}</p>}
                         </div>
                       )
