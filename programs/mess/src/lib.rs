@@ -11,6 +11,9 @@ pub mod mess {
     }
 
     pub fn send(ctx: Context<Send>, text: String) -> Result<()> {
+        require!(text.len() <= 256, MessError::TextTooLong);
+        require!(!text.is_empty(), MessError::TextEmpty);
+
         let message = Message {
             sender: *ctx.accounts.sender.key,
             text,
@@ -58,3 +61,8 @@ pub struct Message {
     pub text: String,
 }
 
+#[error_code]
+pub enum MessError {
+    TextTooLong,
+    TextEmpty,
+}

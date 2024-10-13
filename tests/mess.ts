@@ -1,4 +1,4 @@
-import { AnchorProvider, Program, setProvider, workspace } from "@coral-xyz/anchor";
+import { AnchorError, AnchorProvider, Program, setProvider, workspace } from "@coral-xyz/anchor";
 import { Keypair, PublicKey } from "@solana/web3.js";
 import { Mess } from "../target/types/mess";
 import { assert } from "chai";
@@ -64,4 +64,32 @@ describe("mess", () => {
     assert.deepEqual(chatData.messages[1].sender, messageOwner.publicKey);
     assert.equal(chatData.messages[1].text, "Hey there");
   });
+
+  it('throws an error when text is too long', async () => {
+    const veryLongText = 'a'.repeat(256);
+
+    try {
+      await program.methods.send(veryLongText).accounts({
+        chat: chatPublicKey,
+        sender: chatOwner.publicKey
+      }).signers([chatOwner]).rpc();
+    } catch (e) {
+      assert.instanceOf(e, AnchorError);
+      assert.equal(e.error.errorCode.code, "TextTooLong");
+      assert.equal(e.error.errorCode.number, 6000);
+    }
+  })
+
+  it('throws an error when text is empty', async () => {
+    try {
+      await program.methods.send('').accounts({
+        chat: chatPublicKey,
+        sender: chatOwner.publicKey
+      }).signers([chatOwner]).rpc();
+    } catch (e) {
+      assert.instanceOf(e, AnchorError);
+      assert.equal(e.error.errorCode.code, "TextEmpty");
+      assert.equal(e.error.errorCode.number, 6001);
+    }
+  })
 });
