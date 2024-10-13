@@ -9,7 +9,7 @@ export default function SearchBar({
   searchForm
 }: {
   joinChatroom: (values: z.infer<typeof searchFormSchema>) => void,
-  searchForm: ReturnType<typeof useForm>
+  searchForm: ReturnType<typeof useForm<z.infer<typeof searchFormSchema>>>
 }) {
   return (
     <Form {...searchForm}>

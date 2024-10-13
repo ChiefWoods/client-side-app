@@ -23,7 +23,9 @@ export default function Header({ setChatPDA }: { setChatPDA: (chatPDA: string) =
   });
 
   function showDefaultChatroom() {
-    setChatPDA(getChatPDA(publicKey));
+    if (publicKey) {
+      setChatPDA(getChatPDA(publicKey));
+    }
   }
 
   function joinChatroom(values: z.infer<typeof searchFormSchema>) {
