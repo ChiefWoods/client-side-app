@@ -80,7 +80,12 @@ export type Mess = {
         },
         {
           "name": "sender",
+          "writable": true,
           "signer": true
+        },
+        {
+          "name": "systemProgram",
+          "address": "11111111111111111111111111111111"
         }
       ],
       "args": [
@@ -104,6 +109,16 @@ export type Mess = {
         250,
         177
       ]
+    }
+  ],
+  "errors": [
+    {
+      "code": 6000,
+      "name": "textTooLong"
+    },
+    {
+      "code": 6001,
+      "name": "textEmpty"
     }
   ],
   "types": [
