@@ -103,8 +103,8 @@ anchor deploy
 10. In the `app` directory, create a `.env` file and set its contents
 
 ```
-VITE_HELIUS_API_KEY=<HELIUS_API_KEY>
-VITE_MESS_PROGRAM_ID=<MESS_PROGRAM_ID>
+VITE_RPC_ENDPOINT=<YOUR RPC ENDPOINT>
+VITE_MESS_PROGRAM_ID=<YOUR PROGRAM ID>
 ```
 
 11. Start development server
