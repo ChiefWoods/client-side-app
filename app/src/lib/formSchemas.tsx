@@ -1,7 +1,7 @@
 import { Connection, PublicKey } from "@solana/web3.js";
 import { z } from "zod";
 
-const connection = new Connection(`https://devnet.helius-rpc.com/?api-key=${import.meta.env.VITE_HELIUS_API_KEY}`);
+const connection = new Connection(import.meta.env.VITE_RPC_ENDPOINT);
 
 export const searchFormSchema = z.object({
   chatroom: z

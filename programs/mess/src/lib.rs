@@ -29,7 +29,7 @@ pub struct Init<'info> {
     #[account(
         init_if_needed,
         payer = payer,
-        space = 8 + Chat::INIT_SPACE,
+        space = 8 + 4,
         seeds = [b"global", payer.key.as_ref()],
         bump
     )]
@@ -40,16 +40,22 @@ pub struct Init<'info> {
 }
 
 #[derive(Accounts)]
+#[instruction(text: String)]
 pub struct Send<'info> {
-    #[account(mut)]
+    #[account(
+        mut,
+        realloc = chat.to_account_info().data_len() + 32 + 4 + text.len(),
+        realloc::payer = sender,
+        realloc::zero = false
+    )]
     pub chat: Account<'info, Chat>,
-    pub sender: Signer<'info>
+    #[account(mut)]
+    pub sender: Signer<'info>,
+    pub system_program: Program<'info, System>,
 }
 
 #[account]
-#[derive(InitSpace)]
 pub struct Chat {
-    #[max_len(20)]
     messages: Vec<Message>,
 }
 

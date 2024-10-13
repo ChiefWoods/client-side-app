@@ -105,11 +105,6 @@ export default function Chat({
         setMessages([...messages, { sender: publicKey, text: values.message }]);
         messageForm.reset();
         messageForm.setFocus("message");
-
-        chatSection.current?.scrollTo({
-          top: chatSection.current.scrollHeight,
-          behavior: "smooth"
-        });
       } catch (err) {
         console.error(err);
       }
@@ -192,10 +187,6 @@ export default function Chat({
           try {
             const { messages } = await program.account.chat.fetch(chatPDA);
             setMessages(messages);
-
-            if (messages.length >= 20) {
-              connection.removeAccountChangeListener(subscriptionId!);
-            }
           } catch (err) {
             console.error(err);
             setMessages([]);
@@ -316,9 +307,9 @@ export default function Chat({
               <FormItem className="w-full">
                 <FormControl>
                   <Input
-                    placeholder={messages.length >= 20 ? "Maximum chat length reached" : "Type a message"}
+                    placeholder="Type a message"
                     {...field}
-                    disabled={messageForm.formState.isSubmitting || messages.length >= 20}
+                    disabled={messageForm.formState.isSubmitting}
                   />
                 </FormControl>
               </FormItem>
@@ -328,7 +319,7 @@ export default function Chat({
             className="hover:bg-tertiary p-2 aspect-square"
             size={"icon"}
             type="submit"
-            disabled={messageForm.formState.isSubmitting || messages.length >= 20}
+            disabled={messageForm.formState.isSubmitting}
           >
             {messageForm.formState.isSubmitting ? (
               <LoaderCircle size={20} className="animate-spin" />

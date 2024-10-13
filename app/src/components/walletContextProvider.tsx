@@ -8,7 +8,7 @@ import { ReactNode, useMemo } from "react";
 import "@solana/wallet-adapter-react-ui/styles.css";
 
 export default function WalletContextProvider({ children }: { children: ReactNode }) {
-  const endpoint = useMemo(() => `https://devnet.helius-rpc.com/?api-key=${import.meta.env.VITE_HELIUS_API_KEY}`, []);
+  const endpoint = useMemo(() => import.meta.env.VITE_RPC_ENDPOINT, []);
   const wallets = useMemo(() => [
     new PhantomWalletAdapter(),
     new SolflareWalletAdapter(),
