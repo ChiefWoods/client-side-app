@@ -112,7 +112,7 @@ export default function Chat({
   }
 
   useEffect(() => {
-    async function fetchData() {
+    (async () => {
       if (program && chatPDA) {
         setIsLoadingChat(true);
 
@@ -128,13 +128,11 @@ export default function Chat({
 
         setIsLoadingChat(false);
       }
-    }
-
-    fetchData()
+    })();
   }, [program, chatPDA, setIsLoadingChat])
 
   useEffect(() => {
-    async function fetchData() {
+    (async () => {
       if (program && chatPDA) {
         try {
           const messageGroup: MessageGroup[] = [];
@@ -164,9 +162,7 @@ export default function Chat({
           setMessageGroup([]);
         }
       }
-    }
-
-    fetchData();
+    })();
   }, [program, chatPDA, messages])
 
   useEffect(() => {
@@ -181,7 +177,7 @@ export default function Chat({
   useEffect(() => {
     let subscriptionId: number | null = null;
 
-    async function fetchData() {
+    (async () => {
       if (program && chatPDA) {
         subscriptionId = connection.onAccountChange(new PublicKey(chatPDA), async () => {
           try {
@@ -193,9 +189,7 @@ export default function Chat({
           }
         });
       }
-    }
-
-    fetchData()
+    })();
 
     return () => {
       if (subscriptionId) {
