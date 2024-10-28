@@ -1,95 +1,121 @@
-import { AnchorError, AnchorProvider, Program, setProvider, workspace } from "@coral-xyz/anchor";
-import { Keypair, PublicKey } from "@solana/web3.js";
+import { AnchorError, Program, Idl } from "@coral-xyz/anchor";
+import { Keypair, PublicKey, SystemProgram } from "@solana/web3.js";
 import { Mess } from "../target/types/mess";
-import { assert } from "chai";
+import { ProgramTestContext, startAnchor } from "solana-bankrun";
+import { BankrunProvider } from "anchor-bankrun";
+import IDL from "../target/idl/mess.json";
+import { expect } from "chai";
 
 describe("mess", () => {
-  // Configure the client to use the local cluster.
-  setProvider(AnchorProvider.env());
+  let context: ProgramTestContext;
+  let provider: BankrunProvider;
+  let payer: Keypair;
+  let program: Program<Mess>;
+  let chatPDA: PublicKey;
+  const anotherAccount = Keypair.generate();
 
-  const program = workspace.Mess as Program<Mess>;
-  const programProvider = program.provider as AnchorProvider;
-
-  const chatOwner = Keypair.generate();
-  const messageOwner = Keypair.generate();
-  const [chatPublicKey] = PublicKey.findProgramAddressSync([Buffer.from("global"), chatOwner.publicKey.toBuffer()], program.programId);
+  before(async () => {
+    context = await startAnchor("", [], [
+      {
+        address: anotherAccount.publicKey,
+        info: {
+          lamports: 1_000_000_000,
+          data: Buffer.alloc(0),
+          owner: SystemProgram.programId,
+          executable: false
+        }
+      }
+    ]);
+    provider = new BankrunProvider(context);
+    payer = context.payer;
+    program = new Program(IDL as Idl, provider) as unknown as Program<Mess>;
+    [chatPDA] = PublicKey.findProgramAddressSync([Buffer.from("global"), payer.publicKey.toBuffer()], program.programId);
+  });
 
   it("initialize chat", async () => {
-    const signature = await programProvider.connection.requestAirdrop(chatOwner.publicKey, 5_000_000_000);
-    const { blockhash, lastValidBlockHeight } = await programProvider.connection.getLatestBlockhash();
-    await programProvider.connection.confirmTransaction({
-      blockhash,
-      lastValidBlockHeight,
-      signature
-    });
+    await program.methods
+      .init()
+      .accountsPartial({
+        chat: chatPDA,
+        payer: payer.publicKey,
+      })
+      .signers([payer])
+      .rpc();
 
-    await program.methods.init().accounts({
-      chat: chatPublicKey,
-      payer: chatOwner.publicKey,
-    }).signers([chatOwner]).rpc();
+    const chat = await program.account.chat.fetch(chatPDA);
 
-    const chatData = await program.account.chat.fetch(chatPublicKey);
-
-    assert.deepEqual(chatData.messages, []);
-  });
-
-  it("send message", async () => {
-    await program.methods.send("Hello world").accounts({
-      chat: chatPublicKey,
-      sender: chatOwner.publicKey
-    }).signers([chatOwner]).rpc();
-
-    const chatData = await program.account.chat.fetch(chatPublicKey);
-
-    assert.deepEqual(chatData.messages[0].sender, chatOwner.publicKey);
-    assert.equal(chatData.messages[0].text, "Hello world");
+    expect(chat.messages).deep.equal([]);
   })
 
-  it("send message from another account", async () => {
-    const signature = await programProvider.connection.requestAirdrop(messageOwner.publicKey, 5_000_000_000);
-    const { blockhash, lastValidBlockHeight } = await programProvider.connection.getLatestBlockhash();
-    await programProvider.connection.confirmTransaction({
-      blockhash,
-      lastValidBlockHeight,
-      signature
-    });
+  it("send message", async () => {
+    const message = "Hello world";
 
-    await program.methods.send("Hey there").accounts({
-      chat: chatPublicKey,
-      sender: messageOwner.publicKey
-    }).signers([messageOwner]).rpc();
+    await program.methods
+      .send(message)
+      .accounts({
+        chat: chatPDA,
+        sender: payer.publicKey,
+      })
+      .signers([payer])
+      .rpc();
 
-    const chatData = await program.account.chat.fetch(chatPublicKey);
+    const chat = await program.account.chat.fetch(chatPDA);
 
-    assert.deepEqual(chatData.messages[1].sender, messageOwner.publicKey);
-    assert.equal(chatData.messages[1].text, "Hey there");
+    expect(chat.messages[0].sender).deep.equal(payer.publicKey);
+    expect(chat.messages[0].text).equal(message);
   });
 
-  it('throws an error when text is too long', async () => {
+  it("send message from another account", async () => {
+    const message = "Hey there";
+
+    await program.methods
+      .send(message)
+      .accounts({
+        chat: chatPDA,
+        sender: anotherAccount.publicKey,
+      })
+      .signers([anotherAccount])
+      .rpc();
+
+    const chat = await program.account.chat.fetch(chatPDA);
+
+    expect(chat.messages[1].sender).deep.equal(anotherAccount.publicKey);
+    expect(chat.messages[1].text).equal(message);
+  });
+
+  it("throws an error when text is too long", async () => {
     const veryLongText = 'a'.repeat(256);
 
     try {
-      await program.methods.send(veryLongText).accounts({
-        chat: chatPublicKey,
-        sender: chatOwner.publicKey
-      }).signers([chatOwner]).rpc();
+      await program.methods
+        .send(veryLongText)
+        .accounts({
+          chat: chatPDA,
+          sender: payer.publicKey,
+        })
+        .signers([payer])
+        .rpc();
     } catch (e) {
-      assert.instanceOf(e, AnchorError);
-      assert.equal(e.error.errorCode.code, "TextTooLong");
-      assert.equal(e.error.errorCode.number, 6000);
+      expect(e).instanceOf(AnchorError);
+      expect(e.error.errorCode.code).equal("TextTooLong");
+      expect(e.error.errorCode.number).equal(6000);
     }
-  })
+  });
 
-  it('throws an error when text is empty', async () => {
+  it("throws an error when text is empty", async () => {
     try {
-      await program.methods.send('').accounts({
-        chat: chatPublicKey,
-        sender: chatOwner.publicKey
-      }).signers([chatOwner]).rpc();
+      await program.methods
+        .send('')
+        .accounts({
+          chat: chatPDA,
+          sender: payer.publicKey,
+        })
+        .signers([payer])
+        .rpc();
     } catch (e) {
-      assert.instanceOf(e, AnchorError);
-      assert.equal(e.error.errorCode.code, "TextEmpty");
-      assert.equal(e.error.errorCode.number, 6001);
+      expect(e).instanceOf(AnchorError);
+      expect(e.error.errorCode.code).equal("TextEmpty");
+      expect(e.error.errorCode.number).equal(6001);
     }
-  })
+  });
 });
