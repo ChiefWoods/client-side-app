@@ -5,7 +5,7 @@
  * IDL can be found at `target/idl/mess.json`.
  */
 export type Mess = {
-  "address": "3o3K93TeUMRxrcsWf2Eu6E7oX41Ffx9AWcxEZqC6KEqg",
+  "address": "MESSnvM44121e2dm4u6HDaTqdn4qGrLjBKqd2uhfEPk",
   "metadata": {
     "name": "mess",
     "version": "0.1.0",
@@ -114,11 +114,13 @@ export type Mess = {
   "errors": [
     {
       "code": 6000,
-      "name": "textTooLong"
+      "name": "textTooLong",
+      "msg": "Text cannot be longer than 256 characters"
     },
     {
       "code": 6001,
-      "name": "textEmpty"
+      "name": "textEmpty",
+      "msg": "Text cannot be empty"
     }
   ],
   "types": [

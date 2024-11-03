@@ -6,7 +6,7 @@ Messaging dApp for Solana Curriculum in [freeCodeCampWeb3](https://web3.freecode
 
 [Live Website](https://chiefwoods.github.io/client-side-app/)
 
-[Program on Solana Explorer](https://explorer.solana.com/address/3o3K93TeUMRxrcsWf2Eu6E7oX41Ffx9AWcxEZqC6KEqg?cluster=devnet)
+[Program on Solana Explorer](https://explorer.solana.com/address/MESSnvM44121e2dm4u6HDaTqdn4qGrLjBKqd2uhfEPk?cluster=devnet)
 
 [Source Repository](https://github.com/ChiefWoods/client-side-app)
 
@@ -103,8 +103,8 @@ anchor deploy
 10. In the `app` directory, create a `.env` file and set its contents
 
 ```
-VITE_RPC_ENDPOINT=<YOUR RPC ENDPOINT>
-VITE_MESS_PROGRAM_ID=<YOUR PROGRAM ID>
+VITE_RPC_ENDPOINT=<YOUR_RPC_ENDPOINT>
+VITE_MESS_PROGRAM_ID=<YOUR_PROGRAM_ID>
 ```
 
 11. Start development server
