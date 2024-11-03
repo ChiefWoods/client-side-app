@@ -4,7 +4,7 @@ import { Mess } from "../target/types/mess";
 import { ProgramTestContext, startAnchor } from "solana-bankrun";
 import { BankrunProvider } from "anchor-bankrun";
 import IDL from "../target/idl/mess.json";
-import { expect } from "chai";
+import { assert } from "chai";
 
 describe("mess", () => {
   let context: ProgramTestContext;
@@ -28,15 +28,14 @@ describe("mess", () => {
     ]);
     provider = new BankrunProvider(context);
     payer = context.payer;
-    program = new Program(IDL as Idl, provider) as unknown as Program<Mess>;
+    program = new Program<Mess>(IDL as Mess, provider);
     [chatPDA] = PublicKey.findProgramAddressSync([Buffer.from("global"), payer.publicKey.toBuffer()], program.programId);
   });
 
-  it("initialize chat", async () => {
+  it("initializes chat", async () => {
     await program.methods
       .init()
-      .accountsPartial({
-        chat: chatPDA,
+      .accounts({
         payer: payer.publicKey,
       })
       .signers([payer])
@@ -44,10 +43,10 @@ describe("mess", () => {
 
     const chat = await program.account.chat.fetch(chatPDA);
 
-    expect(chat.messages).deep.equal([]);
+    assert.deepEqual(chat.messages, []);
   })
 
-  it("send message", async () => {
+  it("sends message", async () => {
     const message = "Hello world";
 
     await program.methods
@@ -61,11 +60,11 @@ describe("mess", () => {
 
     const chat = await program.account.chat.fetch(chatPDA);
 
-    expect(chat.messages[0].sender).deep.equal(payer.publicKey);
-    expect(chat.messages[0].text).equal(message);
+    assert.deepEqual(chat.messages[0].sender, payer.publicKey);
+    assert.deepEqual(chat.messages[0].text, message);
   });
 
-  it("send message from another account", async () => {
+  it("sends message from another account", async () => {
     const message = "Hey there";
 
     await program.methods
@@ -79,8 +78,8 @@ describe("mess", () => {
 
     const chat = await program.account.chat.fetch(chatPDA);
 
-    expect(chat.messages[1].sender).deep.equal(anotherAccount.publicKey);
-    expect(chat.messages[1].text).equal(message);
+    assert.deepEqual(chat.messages[1].sender, anotherAccount.publicKey);
+    assert.deepEqual(chat.messages[1].text, message);
   });
 
   it("throws an error when text is too long", async () => {
@@ -96,9 +95,9 @@ describe("mess", () => {
         .signers([payer])
         .rpc();
     } catch (e) {
-      expect(e).instanceOf(AnchorError);
-      expect(e.error.errorCode.code).equal("TextTooLong");
-      expect(e.error.errorCode.number).equal(6000);
+      assert.instanceOf(e, AnchorError);
+      assert.equal(e.error.errorCode.code, "TextTooLong");
+      assert.equal(e.error.errorCode.number, 6000);
     }
   });
 
@@ -113,9 +112,9 @@ describe("mess", () => {
         .signers([payer])
         .rpc();
     } catch (e) {
-      expect(e).instanceOf(AnchorError);
-      expect(e.error.errorCode.code).equal("TextEmpty");
-      expect(e.error.errorCode.number).equal(6001);
+      assert.instanceOf(e, AnchorError);
+      assert.equal(e.error.errorCode.code, "TextEmpty");
+      assert.equal(e.error.errorCode.number, 6001);
     }
   });
 });

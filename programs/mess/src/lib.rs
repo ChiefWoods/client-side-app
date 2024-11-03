@@ -1,4 +1,4 @@
-use anchor_lang::prelude::*;
+use anchor_lang::{prelude::*, Discriminator};
 
 declare_id!("3o3K93TeUMRxrcsWf2Eu6E7oX41Ffx9AWcxEZqC6KEqg");
 
@@ -20,6 +20,7 @@ pub mod mess {
         };
 
         ctx.accounts.chat.messages.push(message);
+
         Ok(())
     }
 }
@@ -27,9 +28,9 @@ pub mod mess {
 #[derive(Accounts)]
 pub struct Init<'info> {
     #[account(
-        init_if_needed,
+        init,
         payer = payer,
-        space = 8 + 4,
+        space = Chat::MIN_SPACE,
         seeds = [b"global", payer.key.as_ref()],
         bump
     )]
@@ -44,7 +45,7 @@ pub struct Init<'info> {
 pub struct Send<'info> {
     #[account(
         mut,
-        realloc = chat.to_account_info().data_len() + 32 + 4 + text.len(),
+        realloc = chat.to_account_info().data_len() + Message::MIN_SPACE + text.len(),
         realloc::payer = sender,
         realloc::zero = false
     )]
@@ -56,7 +57,12 @@ pub struct Send<'info> {
 
 #[account]
 pub struct Chat {
-    messages: Vec<Message>,
+    pub messages: Vec<Message>,
+}
+
+impl Chat {
+    // Discriminator, Vec
+    pub const MIN_SPACE: usize = Chat::DISCRIMINATOR.len() + 4;
 }
 
 #[account]
@@ -67,8 +73,15 @@ pub struct Message {
     pub text: String,
 }
 
+impl Message {
+    // Pubkey, String
+    pub const MIN_SPACE: usize = 32 + 4;
+}
+
 #[error_code]
 pub enum MessError {
+    #[msg("Text cannot be longer than 256 characters")]
     TextTooLong,
+    #[msg("Text cannot be empty")]
     TextEmpty,
 }
