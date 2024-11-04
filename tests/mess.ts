@@ -1,4 +1,4 @@
-import { AnchorError, Program, Idl } from "@coral-xyz/anchor";
+import { AnchorError, Program } from "@coral-xyz/anchor";
 import { Keypair, PublicKey, SystemProgram } from "@solana/web3.js";
 import { Mess } from "../target/types/mess";
 import { ProgramTestContext, startAnchor } from "solana-bankrun";

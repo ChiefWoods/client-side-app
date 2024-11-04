@@ -1,9 +1,9 @@
 import { useEffect, useState } from "react";
 import { Chat, Header } from "./components";
 import { useAnchorWallet, useConnection, useWallet } from "@solana/wallet-adapter-react";
-import { AnchorProvider, Idl, Program } from "@coral-xyz/anchor";
+import { AnchorProvider, Program } from "@coral-xyz/anchor";
 import { Mess } from "./types/mess";
-import mess from "@/mess.json";
+import IDL from "@/mess.json";
 import { getChatPDA } from "./lib/helper";
 
 export default function App() {
@@ -17,7 +17,7 @@ export default function App() {
   useEffect(() => {
     if (wallet) {
       const provider = new AnchorProvider(connection, wallet, {});
-      setProgram(new Program(mess as Idl, provider) as unknown as Program<Mess>);
+      setProgram(new Program<Mess>(IDL as Mess, provider));
     }
   }, [connection, wallet])
 
