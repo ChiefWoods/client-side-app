@@ -17,7 +17,7 @@ export default function App() {
   useEffect(() => {
     if (wallet) {
       const provider = new AnchorProvider(connection, wallet, {});
-      setProgram(new Program<Mess>(IDL as Mess, provider));
+      setProgram(new Program(IDL as Mess, provider));
     }
   }, [connection, wallet])
 

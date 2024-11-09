@@ -28,7 +28,7 @@ describe("mess", () => {
     ]);
     provider = new BankrunProvider(context);
     payer = context.payer;
-    program = new Program<Mess>(IDL as Mess, provider);
+    program = new Program(IDL as Mess, provider);
     [chatPDA] = PublicKey.findProgramAddressSync([Buffer.from("global"), payer.publicKey.toBuffer()], program.programId);
   });
 
