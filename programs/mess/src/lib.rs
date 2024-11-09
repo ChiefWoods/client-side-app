@@ -27,22 +27,24 @@ pub mod mess {
 
 #[derive(Accounts)]
 pub struct Init<'info> {
-    #[account(
-        init,
-        payer = payer,
-        space = Chat::MIN_SPACE,
-        seeds = [b"global", payer.key.as_ref()],
-        bump
-    )]
-    pub chat: Account<'info, Chat>,
     #[account(mut)]
     pub payer: Signer<'info>,
+    #[account(
+        init,
+        space = Chat::MIN_SPACE,
+        seeds = [b"global", payer.key.as_ref()],
+        bump,
+        payer = payer,
+    )]
+    pub chat: Account<'info, Chat>,
     pub system_program: Program<'info, System>,
 }
 
 #[derive(Accounts)]
 #[instruction(text: String)]
 pub struct Send<'info> {
+    #[account(mut)]
+    pub sender: Signer<'info>,
     #[account(
         mut,
         realloc = chat.to_account_info().data_len() + Message::MIN_SPACE + text.len(),
@@ -50,8 +52,6 @@ pub struct Send<'info> {
         realloc::zero = false
     )]
     pub chat: Account<'info, Chat>,
-    #[account(mut)]
-    pub sender: Signer<'info>,
     pub system_program: Program<'info, System>,
 }
 
@@ -61,12 +61,11 @@ pub struct Chat {
 }
 
 impl Chat {
-    // Discriminator, Vec
+    // discriminator, messages
     pub const MIN_SPACE: usize = Chat::DISCRIMINATOR.len() + 4;
 }
 
-#[account]
-#[derive(InitSpace)]
+#[derive(AnchorSerialize, AnchorDeserialize, Clone, InitSpace)]
 pub struct Message {
     pub sender: Pubkey,
     #[max_len(256)]
@@ -74,7 +73,7 @@ pub struct Message {
 }
 
 impl Message {
-    // Pubkey, String
+    // sender, text
     pub const MIN_SPACE: usize = 32 + 4;
 }
 
