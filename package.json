@@ -6,23 +6,18 @@
     "push": "git subtree push --prefix app/dist origin gh-pages",
     "prepare": "husky"
   },
-  "dependencies": {
-    "@coral-xyz/anchor": "^0.30.1",
-    "@solana/web3.js": "^1.95.3"
-  },
   "devDependencies": {
+    "@coral-xyz/anchor": "^0.30.1",
+    "@solana/web3.js": "^1.95.3",
     "@types/bn.js": "^5.1.0",
+    "@types/bun": "^1.1.13",
     "@types/chai": "^4.3.0",
     "@types/mocha": "^9.0.0",
     "anchor-bankrun": "^0.5.0",
-    "chai": "^4.3.4",
     "husky": "^9.1.6",
     "lint-staged": "^15.2.10",
-    "mocha": "^9.0.3",
     "prettier": "^2.6.2",
     "solana-bankrun": "^0.4.0",
-    "ts-mocha": "^10.0.0",
     "typescript": "^4.3.5"
-  },
-  "packageManager": "yarn@1.22.22+sha512.a6b2f7906b721bba3d67d4aff083df04dad64c399707841b7acf00f6b133b7ac24255f2652fa22ae3534329dc6180534e98d17432037ff6fd140556e2bb3137e"
+  }
 }
