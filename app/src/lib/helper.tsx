@@ -1,8 +1,8 @@
 import { PublicKey } from "@solana/web3.js";
 
-export function getChatPDA(publicKey: PublicKey) {
+export function getChatPDA(owner: PublicKey) {
   const chatPDA = PublicKey.findProgramAddressSync(
-    [Buffer.from("global"), publicKey.toBuffer()],
+    [Buffer.from("global"), owner.toBuffer()],
     new PublicKey(import.meta.env.VITE_MESS_PROGRAM_ID),
   )[0].toBase58();
 
@@ -10,5 +10,5 @@ export function getChatPDA(publicKey: PublicKey) {
 }
 
 export function truncateAddress(address: string) {
-  return `${address.slice(0, 4)}....${address.slice(-4)}`;
+  return `${address.slice(0, 5)}....${address.slice(-5)}`;
 }

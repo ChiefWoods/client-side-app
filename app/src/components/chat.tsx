@@ -54,14 +54,14 @@ export default function Chat({
       setIsCreatingChatroom(true);
 
       try {
-        const inst = await program.methods
+        const ix = await program.methods
           .init()
           .accounts({
             payer: publicKey,
           })
           .instruction();
 
-        const signature = await sendTransaction(new Transaction().add(inst), connection);
+        const signature = await sendTransaction(new Transaction().add(ix), connection);
 
         const { blockhash, lastValidBlockHeight } = await connection.getLatestBlockhash();
 
@@ -83,7 +83,7 @@ export default function Chat({
   async function sendMessage(values: z.infer<typeof messageFormSchema>) {
     if (program && chatPDA && publicKey) {
       try {
-        const inst = await program.methods
+        const ix = await program.methods
           .send(values.message)
           .accounts({
             chat: chatPDA,
@@ -91,7 +91,7 @@ export default function Chat({
           })
           .instruction();
 
-        const signature = await sendTransaction(new Transaction().add(inst), connection);
+        const signature = await sendTransaction(new Transaction().add(ix), connection);
 
         const { blockhash, lastValidBlockHeight } = await connection.getLatestBlockhash();
 
