@@ -3,7 +3,7 @@ import { Chat, Header } from "./components";
 import { useAnchorWallet, useConnection, useWallet } from "@solana/wallet-adapter-react";
 import { AnchorProvider, Program } from "@coral-xyz/anchor";
 import { Mess } from "./types/mess";
-import IDL from "@/mess.json";
+import IDL from "@/idl/mess.json";
 import { getChatPDA } from "./lib/helper";
 
 export default function App() {
