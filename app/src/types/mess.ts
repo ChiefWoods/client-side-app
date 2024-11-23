@@ -5,7 +5,7 @@
  * IDL can be found at `target/idl/mess.json`.
  */
 export type Mess = {
-  "address": "MESSnvM44121e2dm4u6HDaTqdn4qGrLjBKqd2uhfEPk",
+  "address": "MESSWwDyEZF9D63ktc12VGEGA6huravzPNJj9gjYFqq",
   "metadata": {
     "name": "mess",
     "version": "0.1.0",
@@ -26,6 +26,11 @@ export type Mess = {
         100
       ],
       "accounts": [
+        {
+          "name": "payer",
+          "writable": true,
+          "signer": true
+        },
         {
           "name": "chat",
           "writable": true,
@@ -50,11 +55,6 @@ export type Mess = {
           }
         },
         {
-          "name": "payer",
-          "writable": true,
-          "signer": true
-        },
-        {
           "name": "systemProgram",
           "address": "11111111111111111111111111111111"
         }
@@ -75,13 +75,13 @@ export type Mess = {
       ],
       "accounts": [
         {
-          "name": "chat",
-          "writable": true
-        },
-        {
           "name": "sender",
           "writable": true,
           "signer": true
+        },
+        {
+          "name": "chat",
+          "writable": true
         },
         {
           "name": "systemProgram",

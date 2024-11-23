@@ -1,6 +1,6 @@
 use anchor_lang::{prelude::*, Discriminator};
 
-declare_id!("MESSnvM44121e2dm4u6HDaTqdn4qGrLjBKqd2uhfEPk");
+declare_id!("MESSWwDyEZF9D63ktc12VGEGA6huravzPNJj9gjYFqq");
 
 #[program]
 pub mod mess {

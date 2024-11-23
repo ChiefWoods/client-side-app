@@ -6,7 +6,7 @@ Messaging dApp for Solana Curriculum in [freeCodeCampWeb3](https://web3.freecode
 
 [Live Website](https://chiefwoods.github.io/client-side-app/)
 
-[Program on Solana Explorer](https://explorer.solana.com/address/MESSnvM44121e2dm4u6HDaTqdn4qGrLjBKqd2uhfEPk?cluster=devnet)
+[Program on Solana Explorer](https://explorer.solana.com/address/MESSWwDyEZF9D63ktc12VGEGA6huravzPNJj9gjYFqq?cluster=devnet)
 
 [Source Repository](https://github.com/ChiefWoods/client-side-app)
 
