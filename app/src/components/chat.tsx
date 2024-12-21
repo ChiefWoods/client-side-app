@@ -1,37 +1,32 @@
 import { useConnection, useWallet } from "@solana/wallet-adapter-react";
 import { Button, Form, FormControl, FormField, FormItem, Input, Tooltip, TooltipContent, TooltipProvider } from "./ui";
 import { Copy, CopyCheck, LoaderCircle, Plus, SendHorizonal } from "lucide-react";
-import { Program } from "@coral-xyz/anchor";
-import { Mess } from "@/types/mess";
 import { useEffect, useRef, useState } from "react";
 import { Message, MessageGroup } from "@/types/message";
-import { truncateAddress } from "@/lib/helper";
+import { truncateAddress } from "@/lib/utils";
 import { z } from "zod";
-import { messageFormSchema } from "@/lib/formSchemas";
+import { messageFormSchema } from "@/schemas";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { PublicKey, Transaction } from "@solana/web3.js";
+import { PublicKey } from "@solana/web3.js";
 import { Spinner, Text } from ".";
 import { TooltipTrigger } from "@radix-ui/react-tooltip";
+import { useAnchorProgram } from "@/hooks";
 
 export default function Chat({
-  program,
-  chatPDA,
-  isLoadingChat,
-  setIsLoadingChat,
-}: {
-  program: Program<Mess> | null,
-  chatPDA: string | null,
-  isLoadingChat: boolean,
-  setIsLoadingChat: (isLoadingChat: boolean) => void
+  chatPda
+} : {
+  chatPda: string | null
 }) {
   const { publicKey, connecting, sendTransaction } = useWallet();
   const { connection } = useConnection();
+  const { program } = useAnchorProgram();
   const [doesChatroomExist, setDoesChatroomExist] = useState<boolean>(false);
   const [messages, setMessages] = useState<Message[]>([]);
   const [messageGroup, setMessageGroup] = useState<MessageGroup[]>([]);
   const [isCopied, setIsCopied] = useState<boolean>(false);
   const [isCreatingChatroom, setIsCreatingChatroom] = useState<boolean>(false);
+  const [isLoadingChat, setIsLoadingChat] = useState<boolean>(false);
   const chatSection = useRef<HTMLDivElement>(null);
 
   const messageForm = useForm<z.infer<typeof messageFormSchema>>({
@@ -42,33 +37,36 @@ export default function Chat({
   })
 
   function copyChatPDA() {
-    if (!isCopied && chatPDA) {
-      navigator.clipboard.writeText(chatPDA.toString());
+    if (!isCopied && chatPda) {
+      navigator.clipboard.writeText(chatPda.toString());
       setIsCopied(true);
       setTimeout(() => setIsCopied(false), 3000);
     }
   }
 
   async function createChatroom() {
-    if (program && chatPDA && publicKey) {
+    if (program && chatPda && publicKey) {
       setIsCreatingChatroom(true);
 
       try {
-        const ix = await program.methods
+        const { blockhash, lastValidBlockHeight } = await connection.getLatestBlockhash();
+
+        const tx = await program.methods
           .init()
           .accounts({
             payer: publicKey,
           })
-          .instruction();
+          .transaction();
 
-        const signature = await sendTransaction(new Transaction().add(ix), connection);
+        tx.recentBlockhash = blockhash;
+        tx.lastValidBlockHeight = lastValidBlockHeight;
 
-        const { blockhash, lastValidBlockHeight } = await connection.getLatestBlockhash();
+        const signature = await sendTransaction(tx, connection);
 
         await connection.confirmTransaction({
-          signature,
           blockhash,
           lastValidBlockHeight,
+          signature,
         });
 
         setDoesChatroomExist(true);
@@ -81,24 +79,27 @@ export default function Chat({
   }
 
   async function sendMessage(values: z.infer<typeof messageFormSchema>) {
-    if (program && chatPDA && publicKey) {
+    if (program && chatPda && publicKey) {
       try {
-        const ix = await program.methods
-          .send(values.message)
-          .accounts({
-            chat: chatPDA,
-            sender: publicKey,
-          })
-          .instruction();
-
-        const signature = await sendTransaction(new Transaction().add(ix), connection);
-
         const { blockhash, lastValidBlockHeight } = await connection.getLatestBlockhash();
 
+        const tx = await program.methods
+          .send(values.message.trim())
+          .accounts({
+            chat: chatPda,
+            sender: publicKey,
+          })
+          .transaction();
+
+        tx.recentBlockhash = blockhash;
+        tx.lastValidBlockHeight = lastValidBlockHeight;
+
+        const signature = await sendTransaction(tx, connection);
+
         await connection.confirmTransaction({
-          signature,
           blockhash,
           lastValidBlockHeight,
+          signature,
         });
 
         setMessages([...messages, { sender: publicKey, text: values.message }]);
@@ -112,11 +113,11 @@ export default function Chat({
 
   useEffect(() => {
     (async () => {
-      if (program && chatPDA) {
+      if (program && chatPda) {
         setIsLoadingChat(true);
 
         try {
-          const { messages } = await program.account.chat.fetch(chatPDA);
+          const { messages } = await program.account.chat.fetch(chatPda);
           setMessages(messages);
           setDoesChatroomExist(true);
         } catch (err) {
@@ -128,11 +129,11 @@ export default function Chat({
         setIsLoadingChat(false);
       }
     })();
-  }, [program, chatPDA, setIsLoadingChat])
+  }, [program, chatPda, setIsLoadingChat])
 
   useEffect(() => {
     (async () => {
-      if (program && chatPDA) {
+      if (program && chatPda) {
         try {
           const messageGroup: MessageGroup[] = [];
           let currentSender: string = "";
@@ -162,7 +163,7 @@ export default function Chat({
         }
       }
     })();
-  }, [program, chatPDA, messages])
+  }, [program, chatPda, messages])
 
   useEffect(() => {
     if (messageGroup.length) {
@@ -177,10 +178,10 @@ export default function Chat({
     let subscriptionId: number | null = null;
 
     (async () => {
-      if (program && chatPDA) {
-        subscriptionId = connection.onAccountChange(new PublicKey(chatPDA), async () => {
+      if (program && chatPda) {
+        subscriptionId = connection.onAccountChange(new PublicKey(chatPda), async () => {
           try {
-            const { messages } = await program.account.chat.fetch(chatPDA);
+            const { messages } = await program.account.chat.fetch(chatPda);
             setMessages(messages);
           } catch (err) {
             console.error(err);
@@ -195,15 +196,15 @@ export default function Chat({
         connection.removeAccountChangeListener(subscriptionId);
       }
     }
-  }, [program, chatPDA, connection])
+  }, [program, chatPda, connection])
 
   useEffect(() => {
-    if (chatPDA && doesChatroomExist) {
-      document.title = `Mess | ${truncateAddress(chatPDA)}`;
+    if (chatPda && doesChatroomExist) {
+      document.title = `Mess | ${truncateAddress(chatPda)}`;
     } else {
       document.title = "Mess";
     }
-  }, [chatPDA, doesChatroomExist])
+  }, [chatPda, doesChatroomExist])
 
   return (
     <>
@@ -215,10 +216,10 @@ export default function Chat({
             isLoadingChat ? (
               <Spinner />
             ) : (
-              chatPDA && doesChatroomExist ? (
+              chatPda && doesChatroomExist ? (
                 <>
                   <div className="w-full flex gap-x-2 items-center">
-                    <h2 className="text-2xl sm:text-3xl text-primary font-semibold">Chatroom : {truncateAddress(chatPDA)}</h2>
+                    <h2 className="text-2xl sm:text-3xl text-primary font-semibold">Chatroom : {truncateAddress(chatPda)}</h2>
                     <Button
                       variant={"ghost"}
                       size={"icon"}

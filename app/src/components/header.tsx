@@ -2,15 +2,19 @@ import { WalletMultiButton } from "@solana/wallet-adapter-react-ui";
 import { Button } from "./ui";
 import { ArrowLeft, MessageSquareMore, Search } from "lucide-react";
 import { useWallet } from "@solana/wallet-adapter-react";
-import { getChatPDA } from "@/lib/helper";
 import { useForm } from "react-hook-form";
-import { searchFormSchema } from "@/lib/formSchemas";
+import { searchFormSchema } from "@/schemas";
 import { z } from "zod";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useEffect, useState } from "react";
 import { SearchBar } from ".";
+import { deriveChatPda } from "@/lib/utils";
 
-export default function Header({ setChatPDA }: { setChatPDA: (chatPDA: string) => void }) {
+export default function Header({ 
+  setChatPda 
+}: {
+  setChatPda: (chatPda: string) => void
+}) {
   const { publicKey } = useWallet();
   const [isMobile, setIsMobile] = useState<boolean>(window.innerWidth < 640);
   const [isSearchExpanded, setIsSearchExpanded] = useState<boolean>(false);
@@ -24,12 +28,12 @@ export default function Header({ setChatPDA }: { setChatPDA: (chatPDA: string) =
 
   function showDefaultChatroom() {
     if (publicKey) {
-      setChatPDA(getChatPDA(publicKey));
+      setChatPda(deriveChatPda(publicKey));
     }
   }
 
   function joinChatroom(values: z.infer<typeof searchFormSchema>) {
-    setChatPDA(values.chatroom);
+    setChatPda(values.chatroom);
     searchForm.reset();
   }
 

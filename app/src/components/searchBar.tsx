@@ -1,5 +1,5 @@
 import { useForm } from "react-hook-form";
-import { searchFormSchema } from "@/lib/formSchemas";
+import { searchFormSchema } from "@/schemas";
 import { z } from "zod";
 import { Button, Form, FormControl, FormField, FormItem, Input } from "./ui";
 import { Search } from "lucide-react";
