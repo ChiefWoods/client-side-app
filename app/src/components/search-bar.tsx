@@ -3,7 +3,6 @@ import { searchFormSchema } from "@/schemas";
 import { z } from "zod";
 import { Button, Form, FormControl, FormField, FormItem, Input } from "./ui";
 import { Search } from "lucide-react";
-import { cn } from "@/lib/utils";
 import { useEffect } from "react";
 import { toast } from "sonner";
 
@@ -36,14 +35,14 @@ export default function SearchBar({
                   placeholder="Enter chatroom address"
                   {...field}
                   disabled={searchForm.formState.isSubmitting}
-                  className={cn("text-black", searchForm.formState.errors.chatroom && "border-destructive")}
+                  className={searchForm.formState.errors.chatroom && "border-destructive"}
                 />
               </FormControl>
             </FormItem>
           )}
         />
         <Button
-          className="hover:bg-tertiary p-2 aspect-square"
+          className="btn"
           size={"icon"}
           type="submit"
           disabled={searchForm.formState.isSubmitting}

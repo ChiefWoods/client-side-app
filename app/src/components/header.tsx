@@ -7,7 +7,7 @@ import { searchFormSchema } from "@/schemas";
 import { z } from "zod";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useEffect, useState } from "react";
-import { SearchBar } from ".";
+import { ModeToggle, SearchBar } from ".";
 import { deriveChatPda } from "@/lib/utils";
 
 export default function Header({ 
@@ -107,6 +107,7 @@ export default function Header({
           />
         )
       )}
+      <ModeToggle />
       {!isSearchExpanded && <WalletMultiButton />}
     </header>
   )

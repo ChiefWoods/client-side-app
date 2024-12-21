@@ -18,6 +18,14 @@ import {
 import {
   Toaster
 } from "./sonner"
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuLabel,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from "./dropdown-menu"
 
 export {
   Input,
@@ -34,4 +42,10 @@ export {
   TooltipProvider,
   TooltipTrigger,
   Toaster,
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuLabel,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
 }

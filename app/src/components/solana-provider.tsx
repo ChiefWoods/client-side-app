@@ -7,7 +7,7 @@ import { BitgetWalletAdapter, PhantomWalletAdapter, SolflareWalletAdapter, Salmo
 import { ReactNode, useMemo } from "react";
 import "@solana/wallet-adapter-react-ui/styles.css";
 
-export default function WalletContextProvider({ children }: { children: ReactNode }) {
+export default function SolanaProvider({ children }: { children: ReactNode }) {
   const endpoint = useMemo(() => import.meta.env.VITE_RPC_ENDPOINT, []);
   const wallets = useMemo(() => [
     new PhantomWalletAdapter(),

@@ -253,7 +253,7 @@ export default function Chat({
                           className={`w-fit max-w-[200px] sm:max-w-[400px] p-2 bg-primary-foreground flex flex-col gap-y-2 rounded-lg break-words
                           ${isSelf
                               ? "self-end items-end bg-accent text-primary rounded-br-none mr-4"
-                              : "self-start items-start bg-primary-foreground text-tertiary rounded-bl-none"}`}
+                              : "self-start items-start bg-primary-foreground text-primary rounded-bl-none"}`}
                         >
                           {texts.map((text, j) => <p key={j} className="max-w-full">{text}</p>)}
                           {!isSelf && (
@@ -318,7 +318,7 @@ export default function Chat({
             )}
           />
           <Button
-            className="hover:bg-tertiary p-2 aspect-square"
+            className="btn"
             size={"icon"}
             type="submit"
             disabled={messageForm.formState.isSubmitting}

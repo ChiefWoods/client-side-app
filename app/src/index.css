@@ -70,4 +70,7 @@
 }
 
 @layer components {
+  .btn {
+    @apply bg-primary hover:bg-tertiary dark:hover:bg-primary/90 text-primary-foreground hover:text-primary-foreground p-2 aspect-square !important;
+  }
 }

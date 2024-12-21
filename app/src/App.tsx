@@ -1,4 +1,4 @@
-import { Chat, Header } from "./components";
+import { Chat, Header, ThemeProvider } from "./components";
 import { Toaster } from "./components/ui";
 import { useChatPda } from "./hooks";
 
@@ -6,7 +6,7 @@ export default function App() {
   const { chatPda, setChatPda } = useChatPda();
 
   return (
-    <>
+    <ThemeProvider defaultTheme="light" storageKey="vite-ui-theme">
       <Header
         setChatPda={setChatPda}
       />
@@ -25,6 +25,6 @@ export default function App() {
           },
         }}
       />
-    </>
+    </ThemeProvider>
   )
 }
