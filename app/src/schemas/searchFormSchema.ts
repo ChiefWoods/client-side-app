@@ -17,6 +17,6 @@ export const searchFormSchema = z.object({
         return false;
       }
     }, {
-      message: "Invalid PDA."
+      message: "Invalid chatroom address."
     })
 });

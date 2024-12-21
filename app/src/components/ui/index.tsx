@@ -15,6 +15,9 @@ import {
   TooltipProvider,
   TooltipTrigger,
 } from "./tooltip"
+import {
+  Toaster
+} from "./sonner"
 
 export {
   Input,
@@ -30,4 +33,5 @@ export {
   TooltipContent,
   TooltipProvider,
   TooltipTrigger,
+  Toaster,
 }

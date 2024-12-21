@@ -3,6 +3,9 @@ import { searchFormSchema } from "@/schemas";
 import { z } from "zod";
 import { Button, Form, FormControl, FormField, FormItem, Input } from "./ui";
 import { Search } from "lucide-react";
+import { cn } from "@/lib/utils";
+import { useEffect } from "react";
+import { toast } from "sonner";
 
 export default function SearchBar({
   joinChatroom,
@@ -11,6 +14,12 @@ export default function SearchBar({
   joinChatroom: (values: z.infer<typeof searchFormSchema>) => void,
   searchForm: ReturnType<typeof useForm<z.infer<typeof searchFormSchema>>>
 }) {
+  useEffect(() => {
+    if (searchForm.formState.errors.chatroom) {
+      toast.error(searchForm.formState.errors.chatroom.message);
+    }
+  }, [searchForm.formState.errors.chatroom]);
+
   return (
     <Form {...searchForm}>
       <form
@@ -27,7 +36,7 @@ export default function SearchBar({
                   placeholder="Enter chatroom address"
                   {...field}
                   disabled={searchForm.formState.isSubmitting}
-                  className="text-black"
+                  className={cn("text-black", searchForm.formState.errors.chatroom && "border-destructive")}
                 />
               </FormControl>
             </FormItem>

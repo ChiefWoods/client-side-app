@@ -12,6 +12,7 @@ import { PublicKey } from "@solana/web3.js";
 import { Spinner, Text } from ".";
 import { TooltipTrigger } from "@radix-ui/react-tooltip";
 import { useAnchorProgram } from "@/hooks";
+import { toast } from "sonner";
 
 export default function Chat({
   chatPda
@@ -206,6 +207,12 @@ export default function Chat({
     }
   }, [chatPda, doesChatroomExist])
 
+  useEffect(() => {
+    if (messageForm.formState.errors.message) {
+      toast.error(messageForm.formState.errors.message.message);
+    }
+  }, [messageForm.formState.errors.message]);
+
   return (
     <>
       <main className="flex flex-col gap-y-2 justify-center items-center grow h-full">
@@ -304,6 +311,7 @@ export default function Chat({
                     placeholder="Type a message"
                     {...field}
                     disabled={messageForm.formState.isSubmitting}
+                    className={messageForm.formState.errors.message && "border-destructive"}
                   />
                 </FormControl>
               </FormItem>
