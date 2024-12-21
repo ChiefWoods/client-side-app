@@ -14,12 +14,10 @@ pub mod mess {
         require!(text.len() <= 256, MessError::TextTooLong);
         require!(!text.is_empty(), MessError::TextEmpty);
 
-        let message = Message {
+        ctx.accounts.chat.messages.push(Message {
             sender: *ctx.accounts.sender.key,
             text,
-        };
-
-        ctx.accounts.chat.messages.push(message);
+        });
 
         Ok(())
     }
@@ -57,23 +55,20 @@ pub struct Send<'info> {
 
 #[account]
 pub struct Chat {
-    pub messages: Vec<Message>,
+    pub messages: Vec<Message>, // 4
 }
 
 impl Chat {
-    // discriminator, messages
     pub const MIN_SPACE: usize = Chat::DISCRIMINATOR.len() + 4;
 }
 
-#[derive(AnchorSerialize, AnchorDeserialize, Clone, InitSpace)]
+#[derive(AnchorSerialize, AnchorDeserialize, Clone)]
 pub struct Message {
-    pub sender: Pubkey,
-    #[max_len(256)]
-    pub text: String,
+    pub sender: Pubkey, // 32
+    pub text: String,   // 4
 }
 
 impl Message {
-    // sender, text
     pub const MIN_SPACE: usize = 32 + 4;
 }
 
