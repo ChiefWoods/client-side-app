@@ -210,6 +210,8 @@ export default function Chat({
   useEffect(() => {
     if (messageForm.formState.errors.message) {
       toast.error(messageForm.formState.errors.message.message);
+    } else {
+      toast.dismiss();
     }
   }, [messageForm.formState.errors.message]);
 

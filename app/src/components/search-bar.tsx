@@ -16,6 +16,8 @@ export default function SearchBar({
   useEffect(() => {
     if (searchForm.formState.errors.chatroom) {
       toast.error(searchForm.formState.errors.chatroom.message);
+    } else {
+      toast.dismiss();
     }
   }, [searchForm.formState.errors.chatroom]);
 
