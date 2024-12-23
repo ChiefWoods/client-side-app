@@ -1,7 +1,7 @@
 import { Connection, PublicKey } from "@solana/web3.js";
 import { z } from "zod";
 
-const connection = new Connection(import.meta.env.VITE_RPC_ENDPOINT);
+const connection = new Connection(import.meta.env.VITE_RPC_URL);
 
 export const searchFormSchema = z.object({
   chatroom: z
