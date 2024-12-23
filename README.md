@@ -21,6 +21,7 @@ Messaging dApp for Solana Curriculum in [freeCodeCampWeb3](https://web3.freecode
 ### Libraries
 
 - [shadcn/ui](https://ui.shadcn.com/)
+- [Zod](https://zod.dev/)
 - [@solana/web3.js](https://solana-labs.github.io/solana-web3.js/)
 - [Solana Wallet Adapter](https://github.com/anza-xyz/wallet-adapter)
 
@@ -28,19 +29,19 @@ Messaging dApp for Solana Curriculum in [freeCodeCampWeb3](https://web3.freecode
 
 - [anchor-lang](https://docs.rs/anchor-lang/0.30.1/anchor_lang/index.html)
 
-### Test Frameworks
+### Runtime and Test Runner
 
-- [![Mocha](https://img.shields.io/badge/Mocha-ffffff?style=for-the-badge&logo=mocha)](https://mochajs.org/)
+- [![Bun](https://img.shields.io/badge/Bun-000?style=for-the-badge&logo=bun)](https://bun.sh/)
 
 ## Getting Started
 
 ### Prerequisites
 
-1. Update your Solana CLI, npm package and avm to the latest version
+1. Update your Solana CLI, Bun toolkit and avm to the latest version
 
-```
+```bash
 solana-install update
-npm install npm@latest -g
+bun upgrade
 avm update
 ```
 
@@ -48,68 +49,74 @@ avm update
 
 1. Clone the repository
 
-```
+```bash
 git clone https://github.com/ChiefWoods/client-side-app.git
 ```
 
 2. Install all dependencies
 
-```
-npm install
+```bash
+bun i
 ```
 
 3. Generate a new keypair
 
-```
+```bash
 solana-keygen-new -o mess-wallet.json
 ```
 
 4. Set configuration to use devnet and keypair
 
-```
-solana config set -u d -k mess-wallet.json
+```bash
+solana config set -u l -k mess-wallet.json
 ```
 
-5. Airdrop some SOL to account
+5. Start a local validator
 
+```bash
+solana-test-validator
 ```
+
+6. In another terminal, airdrop some SOL to account
+
+```bash
 solana airdrop 5
 ```
 
-6. Resync your program id
+7. Resync your program id
 
-```
+```bash
 anchor keys sync
 ```
 
-7. Build the program
+8. Build the program
 
-```
+```bash
 anchor build
 ```
 
-8. Test the program
+9. Test the program
 
-```
-anchor test
+```bash
+bun test
 ```
 
-9. Deploy the program to devnet
+10. Deploy the program to devnet
 
-```
+```bash
 anchor deploy
 ```
 
-10. In the `app` directory, create a `.env` file and set its contents
+11. In the `app` directory, create a `.env` file and set its contents
 
 ```
-VITE_RPC_URL=<YOUR_RPC_ENDPOINT>
+VITE_RPC_URL=
 ```
 
-11. Start development server
+12. Start development server
 
-```
-npm run dev
+```bash
+bun run dev
 ```
 
 ## Issues
