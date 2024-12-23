@@ -10,8 +10,8 @@ import { useEffect, useState } from "react";
 import { ModeToggle, SearchBar } from ".";
 import { deriveChatPda } from "@/lib/utils";
 
-export default function Header({ 
-  setChatPda 
+export default function Header({
+  setChatPda
 }: {
   setChatPda: (chatPda: string) => void
 }) {
@@ -107,8 +107,12 @@ export default function Header({
           />
         )
       )}
-      <ModeToggle />
-      {!isSearchExpanded && <WalletMultiButton />}
+      {!isSearchExpanded && (
+        <>
+          <ModeToggle />
+          <WalletMultiButton />
+        </>
+      )}
     </header>
   )
 }
