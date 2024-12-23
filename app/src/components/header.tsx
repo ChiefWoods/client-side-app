@@ -61,7 +61,7 @@ export default function Header({
   }, [isSearchExpanded, searchForm])
 
   return (
-    <header className="flex sm:justify-between items-center gap-x-2 sm:gap-x-4 pt-4 text-primary h-[80px]">
+    <header className="flex sm:justify-between items-center gap-x-2 sm:gap-x-4 pt-4 h-[80px]">
       {!isSearchExpanded && <Button
         variant={"ghost"}
         className="hover:bg-transparent hover:text-primary text-primary flex gap-x-3 items-center pl-0 mr-auto"
