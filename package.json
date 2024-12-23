@@ -2,9 +2,7 @@
   "license": "ISC",
   "scripts": {
     "lint:fix": "prettier */*.js \"*/**/*{.js,.ts}\" -w",
-    "lint": "prettier */*.js \"*/**/*{.js,.ts}\" --check",
-    "push": "git subtree push --prefix app/dist origin gh-pages",
-    "prepare": "husky"
+    "lint": "prettier */*.js \"*/**/*{.js,.ts}\" --check"
   },
   "devDependencies": {
     "@coral-xyz/anchor": "^0.30.1",
