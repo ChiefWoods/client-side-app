@@ -6,12 +6,12 @@ const connection = new Connection(import.meta.env.VITE_RPC_ENDPOINT);
 export const searchFormSchema = z.object({
   chatroom: z
     .string()
-    .min(1, {
-      message: "Chatroom address cannot be empty."
+    .length(44, {
+      message: "Chatroom address must be 44 characters long."
     })
     .refine(async (value) => {
       try {
-        return Boolean(await connection.getBalance(new PublicKey(value)));
+        return Boolean(await connection.getAccountInfo(new PublicKey(value)));
       } catch (err) {
         console.error(err);
         return false;
