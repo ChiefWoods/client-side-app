@@ -21,7 +21,7 @@ export default function Chat({
 }) {
   const { publicKey, connecting, sendTransaction } = useWallet();
   const { connection } = useConnection();
-  const { program } = useAnchorProgram();
+  const { getInitTx, getSendTx, getChatAcc } = useAnchorProgram();
   const [doesChatroomExist, setDoesChatroomExist] = useState<boolean>(false);
   const [messages, setMessages] = useState<Message[]>([]);
   const [messageGroup, setMessageGroup] = useState<MessageGroup[]>([]);
@@ -46,18 +46,12 @@ export default function Chat({
   }
 
   async function createChatroom() {
-    if (program && chatPda && publicKey) {
+    if (chatPda && publicKey) {
       setIsCreatingChatroom(true);
 
       try {
         const { blockhash, lastValidBlockHeight } = await connection.getLatestBlockhash();
-
-        const tx = await program.methods
-          .init()
-          .accounts({
-            payer: publicKey,
-          })
-          .transaction();
+        const tx = await getInitTx();
 
         tx.recentBlockhash = blockhash;
         tx.lastValidBlockHeight = lastValidBlockHeight;
@@ -80,17 +74,10 @@ export default function Chat({
   }
 
   async function sendMessage(values: z.infer<typeof messageFormSchema>) {
-    if (program && chatPda && publicKey) {
+    if (chatPda && publicKey) {
       try {
         const { blockhash, lastValidBlockHeight } = await connection.getLatestBlockhash();
-
-        const tx = await program.methods
-          .send(values.message.trim())
-          .accounts({
-            chat: chatPda,
-            sender: publicKey,
-          })
-          .transaction();
+        const tx = await getSendTx(values.message.trim(), chatPda);
 
         tx.recentBlockhash = blockhash;
         tx.lastValidBlockHeight = lastValidBlockHeight;
@@ -114,27 +101,28 @@ export default function Chat({
 
   useEffect(() => {
     (async () => {
-      if (program && chatPda) {
+      if (chatPda) {
         setIsLoadingChat(true);
 
         try {
-          const { messages } = await program.account.chat.fetch(chatPda);
+          const chatAcc = await getChatAcc(chatPda);
+          const messages = chatAcc?.messages || [];
           setMessages(messages);
           setDoesChatroomExist(true);
         } catch (err) {
           console.error(err)
           setMessages([]);
           setDoesChatroomExist(false);
+        } finally {
+          setIsLoadingChat(false);
         }
-
-        setIsLoadingChat(false);
       }
     })();
-  }, [program, chatPda, setIsLoadingChat])
+  }, [chatPda, setIsLoadingChat, getChatAcc])
 
   useEffect(() => {
     (async () => {
-      if (program && chatPda) {
+      if (chatPda) {
         try {
           const messageGroup: MessageGroup[] = [];
           let currentSender: string = "";
@@ -164,7 +152,7 @@ export default function Chat({
         }
       }
     })();
-  }, [program, chatPda, messages])
+  }, [chatPda, messages])
 
   useEffect(() => {
     if (messageGroup.length) {
@@ -179,10 +167,11 @@ export default function Chat({
     let subscriptionId: number | null = null;
 
     (async () => {
-      if (program && chatPda) {
+      if (chatPda) {
         subscriptionId = connection.onAccountChange(chatPda, async () => {
           try {
-            const { messages } = await program.account.chat.fetch(chatPda);
+            const chatAcc = await getChatAcc(chatPda);
+            const messages = chatAcc?.messages || [];
             setMessages(messages);
           } catch (err) {
             console.error(err);
@@ -197,7 +186,7 @@ export default function Chat({
         connection.removeAccountChangeListener(subscriptionId);
       }
     }
-  }, [program, chatPda, connection])
+  }, [chatPda, connection, getChatAcc])
 
   useEffect(() => {
     if (chatPda && doesChatroomExist) {
