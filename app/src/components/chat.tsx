@@ -17,7 +17,7 @@ import { toast } from "sonner";
 export default function Chat({
   chatPda
 } : {
-  chatPda: string | null
+  chatPda: PublicKey | null
 }) {
   const { publicKey, connecting, sendTransaction } = useWallet();
   const { connection } = useConnection();
@@ -39,7 +39,7 @@ export default function Chat({
 
   function copyChatPDA() {
     if (!isCopied && chatPda) {
-      navigator.clipboard.writeText(chatPda.toString());
+      navigator.clipboard.writeText(chatPda.toBase58());
       setIsCopied(true);
       setTimeout(() => setIsCopied(false), 3000);
     }
@@ -180,7 +180,7 @@ export default function Chat({
 
     (async () => {
       if (program && chatPda) {
-        subscriptionId = connection.onAccountChange(new PublicKey(chatPda), async () => {
+        subscriptionId = connection.onAccountChange(chatPda, async () => {
           try {
             const { messages } = await program.account.chat.fetch(chatPda);
             setMessages(messages);
@@ -201,7 +201,7 @@ export default function Chat({
 
   useEffect(() => {
     if (chatPda && doesChatroomExist) {
-      document.title = `Mess | ${truncateAddress(chatPda)}`;
+      document.title = `Mess | ${truncateAddress(chatPda.toBase58())}`;
     } else {
       document.title = "Mess";
     }
@@ -228,7 +228,7 @@ export default function Chat({
               chatPda && doesChatroomExist ? (
                 <>
                   <div className="w-full flex gap-x-2 items-center">
-                    <h2 className="text-2xl sm:text-3xl text-primary font-semibold">Chatroom : {truncateAddress(chatPda)}</h2>
+                    <h2 className="text-2xl sm:text-3xl text-primary font-semibold">Chatroom : {truncateAddress(chatPda.toBase58())}</h2>
                     <Button
                       variant={"ghost"}
                       size={"icon"}

@@ -9,11 +9,12 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { useEffect, useState } from "react";
 import { ModeToggle, SearchBar } from ".";
 import { deriveChatPda } from "@/lib/utils";
+import { PublicKey } from "@solana/web3.js";
 
 export default function Header({
   setChatPda
 }: {
-  setChatPda: (chatPda: string) => void
+  setChatPda: (chatPda: PublicKey) => void
 }) {
   const { publicKey } = useWallet();
   const [isMobile, setIsMobile] = useState<boolean>(window.innerWidth < 640);
@@ -33,7 +34,7 @@ export default function Header({
   }
 
   function joinChatroom(values: z.infer<typeof searchFormSchema>) {
-    setChatPda(values.chatroom);
+    setChatPda(new PublicKey(values.chatroom));
     searchForm.reset();
   }
 
