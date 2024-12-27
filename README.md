@@ -111,6 +111,7 @@ anchor deploy
 
 ```
 VITE_RPC_URL=
+VITE_RPC_CLUSTER=
 ```
 
 12. Start development server
