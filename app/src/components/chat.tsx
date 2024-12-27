@@ -5,7 +5,7 @@ import { useEffect, useRef, useState } from "react";
 import { Message, MessageGroup } from "@/types/message";
 import { truncateAddress } from "@/lib/utils";
 import { z } from "zod";
-import { messageFormSchema } from "@/schemas";
+import { messageFormSchema } from "@/lib/schemas";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { PublicKey } from "@solana/web3.js";

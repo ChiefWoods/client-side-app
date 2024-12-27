@@ -3,7 +3,7 @@ import { Button } from "./ui";
 import { ArrowLeft, MessageSquareMore, Search } from "lucide-react";
 import { useWallet } from "@solana/wallet-adapter-react";
 import { useForm } from "react-hook-form";
-import { searchFormSchema } from "@/schemas";
+import { searchFormSchema } from "@/lib/schemas";
 import { z } from "zod";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useEffect, useState } from "react";

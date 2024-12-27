@@ -3,6 +3,17 @@ import { z } from "zod";
 
 const connection = new Connection(import.meta.env.VITE_RPC_URL);
 
+export const messageFormSchema = z.object({
+  message: z
+    .string()
+    .min(1, {
+      message: "Message cannot be empty."
+    })
+    .max(256, {
+      message: "Message cannot exceed 256 characters."
+    })
+});
+
 export const searchFormSchema = z.object({
   chatroom: z
     .string()
