@@ -111,7 +111,9 @@ export default function Chat({
         messageForm.reset();
         messageForm.setFocus("message");
       } catch (err) {
-        console.error(err);
+        const error = err as Error;
+        console.error(error);
+        toast.error(error.message);
       }
     }
   }
