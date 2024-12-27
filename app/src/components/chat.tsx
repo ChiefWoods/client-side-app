@@ -19,7 +19,7 @@ export default function Chat({
 } : {
   chatPda: PublicKey | null
 }) {
-  const { publicKey, connecting, sendTransaction } = useWallet();
+  const { publicKey, connecting, connected, sendTransaction } = useWallet();
   const { connection } = useConnection();
   const { getInitTx, getSendTx, getChatAcc } = useAnchorProgram();
   const [doesChatroomExist, setDoesChatroomExist] = useState<boolean>(false);
@@ -98,6 +98,14 @@ export default function Chat({
       }
     }
   }
+
+  useEffect(() => {
+    if (connected) {
+      toast.success("Connected to wallet.");
+    } else {
+      toast.error("Disconnected from wallet.");
+    }
+  }, [connected])
 
   useEffect(() => {
     (async () => {
