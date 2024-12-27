@@ -2,7 +2,7 @@ import { AddressLookupTableAccount, ComputeBudgetProgram, Connection, PublicKey,
 import idl from "@/idl/mess.json";
 import { clsx, type ClassValue } from "clsx"
 import { twMerge } from "tailwind-merge"
-import { getSimulationComputeUnits } from "@solana-developers/helpers";
+import { getExplorerLink, getSimulationComputeUnits } from "@solana-developers/helpers";
 
 export function cn(...inputs: ClassValue[]) {
   return twMerge(clsx(inputs))
@@ -46,4 +46,8 @@ export async function setComputeUnitLimitAndPrice(
   );
 
   return tx;
+}
+
+export function getTransactionLink(signature: string): string {
+  return getExplorerLink("tx", signature, import.meta.env.VITE_RPC_CLUSTER);
 }

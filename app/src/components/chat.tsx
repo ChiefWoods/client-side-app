@@ -3,7 +3,7 @@ import { Button, Form, FormControl, FormField, FormItem, Input, Tooltip, Tooltip
 import { Copy, CopyCheck, LoaderCircle, Plus, SendHorizonal } from "lucide-react";
 import { useEffect, useRef, useState } from "react";
 import { Message, MessageGroup } from "@/types/message";
-import { setComputeUnitLimitAndPrice, truncateAddress } from "@/lib/utils";
+import { getTransactionLink, setComputeUnitLimitAndPrice, truncateAddress } from "@/lib/utils";
 import { z } from "zod";
 import { messageFormSchema } from "@/lib/schemas";
 import { useForm } from "react-hook-form";
@@ -65,6 +65,15 @@ export default function Chat({
           signature,
         });
 
+        const link = getTransactionLink(signature);
+    
+        toast.success(
+          <div className="flex flex-col">
+            <p>Chatroom created.</p>
+            <a href={link} target="_blank" className="underline text-info">{link}</a>
+          </div>
+        );
+    
         setDoesChatroomExist(true);
       } catch (err) {
         console.error(err)
@@ -113,7 +122,7 @@ export default function Chat({
     (async () => {
       if (chatPda) {
         setIsLoadingChat(true);
-        
+
         const chatAcc = await getChatAcc(chatPda);
 
         if (chatAcc) {
