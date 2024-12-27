@@ -9,7 +9,7 @@ import { messageFormSchema } from "@/lib/schemas";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { PublicKey } from "@solana/web3.js";
-import { Spinner, Text } from ".";
+import { Spinner, Text, TransactionToast } from ".";
 import { TooltipTrigger } from "@radix-ui/react-tooltip";
 import { useAnchorProgram } from "@/hooks";
 import { toast } from "sonner";
@@ -47,39 +47,45 @@ export default function Chat({
 
   async function createChatroom() {
     if (chatPda && publicKey) {
-      setIsCreatingChatroom(true);
+      toast.promise(
+        async () => {
+          setIsCreatingChatroom(true);
+          const ix = await getInitIx();
+          const tx = await setComputeUnitLimitAndPrice(connection, [ix], publicKey, []);
+          const { blockhash, lastValidBlockHeight } = await connection.getLatestBlockhash();
 
-      try {
-        const ix = await getInitIx();
-        const tx = await setComputeUnitLimitAndPrice(connection, [ix], publicKey, []);
-        const { blockhash, lastValidBlockHeight } = await connection.getLatestBlockhash();
+          tx.recentBlockhash = blockhash;
+          tx.lastValidBlockHeight = lastValidBlockHeight;
 
-        tx.recentBlockhash = blockhash;
-        tx.lastValidBlockHeight = lastValidBlockHeight;
+          const signature = await sendTransaction(tx, connection);
 
-        const signature = await sendTransaction(tx, connection);
+          await connection.confirmTransaction({
+            blockhash,
+            lastValidBlockHeight,
+            signature,
+          });
 
-        await connection.confirmTransaction({
-          blockhash,
-          lastValidBlockHeight,
-          signature,
-        });
+          return signature;
+        },
+        {
+          loading: "Waiting for signature...",
+          success: (data) => {
+            setDoesChatroomExist(true);
+            setIsCreatingChatroom(false);
+            const link = getTransactionLink(data);
 
-        const link = getTransactionLink(signature);
-    
-        toast.success(
-          <div className="flex flex-col">
-            <p>Chatroom created.</p>
-            <a href={link} target="_blank" className="underline text-info">{link}</a>
-          </div>
-        );
-    
-        setDoesChatroomExist(true);
-      } catch (err) {
-        console.error(err)
-      }
-
-      setIsCreatingChatroom(false);
+            return <TransactionToast
+              title="Chatroom created."
+              link={link}
+            />
+          },
+          error: (err) => {
+            console.error(err);
+            setIsCreatingChatroom(false);
+            return err.message;
+          }
+        }
+      )
     }
   }
 
