@@ -16,7 +16,7 @@ import { toast } from "sonner";
 
 export default function Chat({
   chatPda
-} : {
+}: {
   chatPda: PublicKey | null
 }) {
   const { publicKey, connecting, connected, sendTransaction } = useWallet();
@@ -210,6 +210,10 @@ export default function Chat({
       toast.dismiss();
     }
   }, [messageForm.formState.errors.message]);
+
+  useEffect(() => {
+    messageForm.reset()
+  }, [connected, messageForm])
 
   return (
     <>

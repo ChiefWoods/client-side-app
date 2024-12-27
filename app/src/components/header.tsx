@@ -16,7 +16,7 @@ export default function Header({
 }: {
   setChatPda: (chatPda: PublicKey) => void
 }) {
-  const { publicKey } = useWallet();
+  const { publicKey, connected } = useWallet();
   const [isMobile, setIsMobile] = useState<boolean>(window.innerWidth < 640);
   const [isSearchExpanded, setIsSearchExpanded] = useState<boolean>(false);
 
@@ -60,6 +60,10 @@ export default function Header({
       searchForm.setFocus("chatroom");
     }
   }, [isSearchExpanded, searchForm])
+
+  useEffect(() => {
+    searchForm.reset();
+  }, [connected, searchForm]);
 
   return (
     <header className="flex sm:justify-between items-center gap-x-2 sm:gap-x-4 pt-4 h-[80px]">
