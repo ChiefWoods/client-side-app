@@ -16,6 +16,7 @@ export default function App() {
       <Toaster
         richColors
         closeButton
+        theme="system"
         toastOptions={{
           classNames: {
             error: 'bg-red-400',

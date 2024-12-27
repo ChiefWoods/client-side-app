@@ -33,6 +33,7 @@
     --chart-5: 27 87% 67%;
     --radius: 0.5rem;
     --info-blue: #3b82f6;
+    --phantom-hover: #1a1f2e;
   }
   .dark {
     --background: 222.2 84% 4.9%;
@@ -73,6 +74,6 @@
 
 @layer components {
   .btn {
-    @apply bg-primary hover:bg-tertiary dark:hover:bg-primary/90 text-primary-foreground hover:text-primary-foreground p-2 aspect-square !important;
+    @apply bg-primary hover:bg-phantom-hover dark:hover:bg-primary/90 text-primary-foreground aspect-square font-semibold flex gap-x-2 items-center !important;
   }
 }

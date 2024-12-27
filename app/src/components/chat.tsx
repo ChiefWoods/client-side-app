@@ -290,7 +290,7 @@ export default function Chat({
                 <div className="flex flex-col items-center gap-y-3">
                   <Text content="You don't own a chatroom." />
                   <Button
-                    className="w-fit hover:bg-tertiary font-semibold flex gap-x-2 items-center"
+                    className="btn p-4"
                     onClick={createChatroom}
                     disabled={isCreatingChatroom}
                   >

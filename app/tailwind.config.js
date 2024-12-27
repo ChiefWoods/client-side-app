@@ -59,6 +59,9 @@ export default {
         info: {
           DEFAULT: "var(--info-blue)",
         },
+        "phantom-hover": {
+          DEFAULT: "var(--phantom-hover)",
+        },
       },
     },
   },

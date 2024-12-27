@@ -101,7 +101,7 @@ export default function Header({
               className="hover:bg-transparent hover:text-primary text-primary flex gap-x-3"
               onClick={() => setIsSearchExpanded(true)}
             >
-              <Search size={20} />
+              <Search />
               <p className="text-3xl font-semibold hidden md:block">Mess</p>
             </Button>
           )
