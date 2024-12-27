@@ -111,19 +111,18 @@ export default function Chat({
     (async () => {
       if (chatPda) {
         setIsLoadingChat(true);
+        
+        const chatAcc = await getChatAcc(chatPda);
 
-        try {
-          const chatAcc = await getChatAcc(chatPda);
-          const messages = chatAcc?.messages || [];
-          setMessages(messages);
+        if (chatAcc) {
+          setMessages(chatAcc.messages);
           setDoesChatroomExist(true);
-        } catch (err) {
-          console.error(err)
+        } else {
           setMessages([]);
           setDoesChatroomExist(false);
-        } finally {
-          setIsLoadingChat(false);
         }
+
+        setIsLoadingChat(false);
       }
     })();
   }, [chatPda, setIsLoadingChat, getChatAcc])
