@@ -25,6 +25,7 @@ jobs:
         working-directory: app
         env:
           VITE_RPC_URL: ${{ secrets.VITE_RPC_URL }}
+          VITE_RPC_CLUSTER: ${{ secrets.VITE_RPC_CLUSTER }}
         run: bun run build
 
       - name: Deploy to GitHub Pages
