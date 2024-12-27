@@ -3,7 +3,7 @@ import { AnchorProvider, Program } from "@coral-xyz/anchor";
 import { useAnchorWallet, useConnection, useWallet } from "@solana/wallet-adapter-react";
 import { useCallback, useMemo, useState } from "react";
 import idl from "@/idl/mess.json";
-import { PublicKey, Transaction } from "@solana/web3.js";
+import { PublicKey, TransactionInstruction } from "@solana/web3.js";
 
 export function useAnchorProgram() {
   const [program, setProgram] = useState<Program<Mess> | null>(null);
@@ -18,23 +18,23 @@ export function useAnchorProgram() {
     }
   }, [connection, wallet]);
 
-  async function getInitTx(): Promise<Transaction> {
+  async function getInitIx(): Promise<TransactionInstruction> {
     return await program!.methods
       .init()
       .accounts({
         payer: publicKey!,
       })
-      .transaction();
+      .instruction();
   }
 
-  async function getSendTx(text: string, chatPda: PublicKey): Promise<Transaction> {
+  async function getSendIx(text: string, chatPda: PublicKey): Promise<TransactionInstruction> {
     return await program!.methods
       .send(text)
       .accounts({
         chat: chatPda!,
         sender: publicKey!,
       })
-      .transaction();
+      .instruction();
   }
 
   const getChatAcc = useCallback(async (chatPda: PublicKey) => {
@@ -44,8 +44,8 @@ export function useAnchorProgram() {
   }, [program]);
 
   return { 
-    getInitTx,
-    getSendTx,
+    getInitIx,
+    getSendIx,
     getChatAcc,
    };
 }

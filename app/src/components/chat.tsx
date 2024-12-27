@@ -3,7 +3,7 @@ import { Button, Form, FormControl, FormField, FormItem, Input, Tooltip, Tooltip
 import { Copy, CopyCheck, LoaderCircle, Plus, SendHorizonal } from "lucide-react";
 import { useEffect, useRef, useState } from "react";
 import { Message, MessageGroup } from "@/types/message";
-import { truncateAddress } from "@/lib/utils";
+import { setComputeUnitLimitAndPrice, truncateAddress } from "@/lib/utils";
 import { z } from "zod";
 import { messageFormSchema } from "@/lib/schemas";
 import { useForm } from "react-hook-form";
@@ -21,7 +21,7 @@ export default function Chat({
 }) {
   const { publicKey, connecting, connected, sendTransaction } = useWallet();
   const { connection } = useConnection();
-  const { getInitTx, getSendTx, getChatAcc } = useAnchorProgram();
+  const { getInitIx, getSendIx, getChatAcc } = useAnchorProgram();
   const [doesChatroomExist, setDoesChatroomExist] = useState<boolean>(false);
   const [messages, setMessages] = useState<Message[]>([]);
   const [messageGroup, setMessageGroup] = useState<MessageGroup[]>([]);
@@ -50,8 +50,9 @@ export default function Chat({
       setIsCreatingChatroom(true);
 
       try {
+        const ix = await getInitIx();
+        const tx = await setComputeUnitLimitAndPrice(connection, [ix], publicKey, []);
         const { blockhash, lastValidBlockHeight } = await connection.getLatestBlockhash();
-        const tx = await getInitTx();
 
         tx.recentBlockhash = blockhash;
         tx.lastValidBlockHeight = lastValidBlockHeight;
@@ -76,8 +77,9 @@ export default function Chat({
   async function sendMessage(values: z.infer<typeof messageFormSchema>) {
     if (chatPda && publicKey) {
       try {
+        const ix = await getSendIx(values.message.trim(), chatPda);
+        const tx = await setComputeUnitLimitAndPrice(connection, [ix], publicKey, []);
         const { blockhash, lastValidBlockHeight } = await connection.getLatestBlockhash();
-        const tx = await getSendTx(values.message.trim(), chatPda);
 
         tx.recentBlockhash = blockhash;
         tx.lastValidBlockHeight = lastValidBlockHeight;
