@@ -5,6 +5,10 @@
     <link rel="icon" type="image/svg+xml" href="src/assets/message-square-more.svg" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Mess</title>
+    <script type="module">
+      import { Buffer } from 'buffer'
+      globalThis.Buffer = Buffer
+    </script>
   </head>
   <body>
     <div id="root" class="w-full min-h-dvh max-h-dvh flex flex-col gap-y-4 px-4 md:px-12 font-sans overflow-y-auto"></div>
