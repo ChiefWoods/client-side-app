@@ -1,3 +1,0 @@
-{
-  "programs/mess/src/**/*.rs": "cargo fmt --"
-}
