@@ -37,7 +37,7 @@ export function useAnchorProgram() {
   }, [connection, wallet]);
 
   async function getInitIx(): Promise<TransactionInstruction> {
-    return await program!.methods
+    return await program.methods
       .init()
       .accounts({
         payer: wallet.publicKey!,
@@ -46,7 +46,7 @@ export function useAnchorProgram() {
   }
 
   async function getSendIx(text: string, chatPda: PublicKey): Promise<TransactionInstruction> {
-    return await program!.methods
+    return await program.methods
       .send(text)
       .accounts({
         chat: chatPda!,
