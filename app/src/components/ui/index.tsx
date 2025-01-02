@@ -1,5 +1,5 @@
-import { Input } from "./input";
-import { Button } from "./button";
+import { Input } from './input';
+import { Button } from './button';
 import {
   Form,
   FormControl,
@@ -8,16 +8,14 @@ import {
   FormItem,
   FormLabel,
   FormMessage,
-} from "./form"
+} from './form';
 import {
   Tooltip,
   TooltipContent,
   TooltipProvider,
   TooltipTrigger,
-} from "./tooltip"
-import {
-  Toaster
-} from "./sonner"
+} from './tooltip';
+import { Toaster } from './sonner';
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -25,7 +23,7 @@ import {
   DropdownMenuLabel,
   DropdownMenuSeparator,
   DropdownMenuTrigger,
-} from "./dropdown-menu"
+} from './dropdown-menu';
 
 export {
   Input,
@@ -48,4 +46,4 @@ export {
   DropdownMenuLabel,
   DropdownMenuSeparator,
   DropdownMenuTrigger,
-}
+};

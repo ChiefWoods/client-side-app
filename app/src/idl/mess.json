@@ -9,16 +9,7 @@
   "instructions": [
     {
       "name": "init",
-      "discriminator": [
-        220,
-        59,
-        207,
-        236,
-        108,
-        250,
-        47,
-        100
-      ],
+      "discriminator": [220, 59, 207, 236, 108, 250, 47, 100],
       "accounts": [
         {
           "name": "payer",
@@ -32,14 +23,7 @@
             "seeds": [
               {
                 "kind": "const",
-                "value": [
-                  103,
-                  108,
-                  111,
-                  98,
-                  97,
-                  108
-                ]
+                "value": [103, 108, 111, 98, 97, 108]
               },
               {
                 "kind": "account",
@@ -57,16 +41,7 @@
     },
     {
       "name": "send",
-      "discriminator": [
-        102,
-        251,
-        20,
-        187,
-        65,
-        75,
-        12,
-        69
-      ],
+      "discriminator": [102, 251, 20, 187, 65, 75, 12, 69],
       "accounts": [
         {
           "name": "sender",
@@ -93,16 +68,7 @@
   "accounts": [
     {
       "name": "Chat",
-      "discriminator": [
-        170,
-        4,
-        71,
-        128,
-        185,
-        103,
-        250,
-        177
-      ]
+      "discriminator": [170, 4, 71, 128, 185, 103, 250, 177]
     }
   ],
   "errors": [

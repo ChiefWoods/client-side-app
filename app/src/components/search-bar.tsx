@@ -1,17 +1,17 @@
-import { useForm } from "react-hook-form";
-import { searchFormSchema } from "@/lib/schemas";
-import { z } from "zod";
-import { Button, Form, FormControl, FormField, FormItem, Input } from "./ui";
-import { Search } from "lucide-react";
-import { useEffect } from "react";
-import { toast } from "sonner";
+import { useForm } from 'react-hook-form';
+import { searchFormSchema } from '@/lib/schemas';
+import { z } from 'zod';
+import { Button, Form, FormControl, FormField, FormItem, Input } from './ui';
+import { Search } from 'lucide-react';
+import { useEffect } from 'react';
+import { toast } from 'sonner';
 
 export default function SearchBar({
   joinChatroom,
-  searchForm
+  searchForm,
 }: {
-  joinChatroom: (values: z.infer<typeof searchFormSchema>) => void,
-  searchForm: ReturnType<typeof useForm<z.infer<typeof searchFormSchema>>>
+  joinChatroom: (values: z.infer<typeof searchFormSchema>) => void;
+  searchForm: ReturnType<typeof useForm<z.infer<typeof searchFormSchema>>>;
 }) {
   useEffect(() => {
     if (searchForm.formState.errors.chatroom) {
@@ -24,7 +24,7 @@ export default function SearchBar({
   return (
     <Form {...searchForm}>
       <form
-        className="flex gap-x-2 sm:ml-auto w-full sm:w-auto"
+        className="flex w-full gap-x-2 sm:ml-auto sm:w-auto"
         onSubmit={searchForm.handleSubmit(joinChatroom)}
       >
         <FormField
@@ -37,7 +37,9 @@ export default function SearchBar({
                   placeholder="Enter chatroom address"
                   {...field}
                   disabled={searchForm.formState.isSubmitting}
-                  className={searchForm.formState.errors.chatroom && "border-destructive"}
+                  className={
+                    searchForm.formState.errors.chatroom && 'border-destructive'
+                  }
                 />
               </FormControl>
             </FormItem>
@@ -45,7 +47,7 @@ export default function SearchBar({
         />
         <Button
           className="btn"
-          size={"icon"}
+          size={'icon'}
           type="submit"
           disabled={searchForm.formState.isSubmitting}
         >
@@ -53,5 +55,5 @@ export default function SearchBar({
         </Button>
       </form>
     </Form>
-  )
+  );
 }

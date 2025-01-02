@@ -1,7 +1,7 @@
-import { deriveChatPda } from "@/lib/utils";
-import { useWallet } from "@solana/wallet-adapter-react";
-import { PublicKey } from "@solana/web3.js";
-import { useEffect, useState } from "react";
+import { deriveChatPda } from '@/lib/utils';
+import { useWallet } from '@solana/wallet-adapter-react';
+import { PublicKey } from '@solana/web3.js';
+import { useEffect, useState } from 'react';
 
 export function useChatPda() {
   const { publicKey } = useWallet();

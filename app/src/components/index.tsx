@@ -1,12 +1,12 @@
-import Header from "./header";
-import Chat from "./chat";
-import Spinner from "./spinner";
-import Text from "./text";
-import SearchBar from "./search-bar";
-import SolanaProvider from "./solana-provider";
-import ThemeProvider from "./theme-provider";
-import ModeToggle from "./mode-toggle";
-import TransactionToast from "./transaction-toast";
+import Header from './header';
+import Chat from './chat';
+import Spinner from './spinner';
+import Text from './text';
+import SearchBar from './search-bar';
+import SolanaProvider from './solana-provider';
+import ThemeProvider from './theme-provider';
+import ModeToggle from './mode-toggle';
+import TransactionToast from './transaction-toast';
 
 export {
   Header,
@@ -17,5 +17,5 @@ export {
   SolanaProvider,
   ThemeProvider,
   ModeToggle,
-  TransactionToast
+  TransactionToast,
 };

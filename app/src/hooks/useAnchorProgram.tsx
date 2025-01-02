@@ -1,9 +1,13 @@
-import { Mess } from "@/types/mess";
-import { AnchorProvider, Program } from "@coral-xyz/anchor";
-import { AnchorWallet, useConnection, useWallet } from "@solana/wallet-adapter-react";
-import { useCallback, useMemo, useState } from "react";
-import idl from "@/idl/mess.json";
-import { PublicKey, TransactionInstruction } from "@solana/web3.js";
+import { Mess } from '@/types/mess';
+import { AnchorProvider, Program } from '@coral-xyz/anchor';
+import {
+  AnchorWallet,
+  useConnection,
+  useWallet,
+} from '@solana/wallet-adapter-react';
+import { useCallback, useMemo, useState } from 'react';
+import idl from '@/idl/mess.json';
+import { PublicKey, TransactionInstruction } from '@solana/web3.js';
 
 export function useAnchorProgram() {
   const { connection } = useConnection();
@@ -11,13 +15,9 @@ export function useAnchorProgram() {
   const [program, setProgram] = useState<Program<Mess>>(
     new Program(
       idl as Mess,
-      new AnchorProvider(
-        connection,
-        wallet as AnchorWallet,
-        {
-          commitment: 'confirmed',
-        }
-      )
+      new AnchorProvider(connection, wallet as AnchorWallet, {
+        commitment: 'confirmed',
+      })
     )
   );
 
@@ -25,15 +25,11 @@ export function useAnchorProgram() {
     setProgram(
       new Program(
         idl as Mess,
-        new AnchorProvider(
-          connection,
-          wallet as AnchorWallet,
-          {
-            commitment: 'confirmed',
-          }
-        )
+        new AnchorProvider(connection, wallet as AnchorWallet, {
+          commitment: 'confirmed',
+        })
       )
-    )
+    );
   }, [connection, wallet]);
 
   async function getInitIx(): Promise<TransactionInstruction> {
@@ -45,7 +41,10 @@ export function useAnchorProgram() {
       .instruction();
   }
 
-  async function getSendIx(text: string, chatPda: PublicKey): Promise<TransactionInstruction> {
+  async function getSendIx(
+    text: string,
+    chatPda: PublicKey
+  ): Promise<TransactionInstruction> {
     return await program.methods
       .send(text)
       .accounts({
@@ -55,9 +54,12 @@ export function useAnchorProgram() {
       .instruction();
   }
 
-  const getChatAcc = useCallback(async (chatPda: PublicKey) => {
-    return await program.account.chat.fetchNullable(chatPda);
-  }, [program]);
+  const getChatAcc = useCallback(
+    async (chatPda: PublicKey) => {
+      return await program.account.chat.fetchNullable(chatPda);
+    },
+    [program]
+  );
 
   return {
     getInitIx,

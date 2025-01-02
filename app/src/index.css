@@ -74,6 +74,6 @@
 
 @layer components {
   .btn {
-    @apply bg-primary hover:bg-phantom-hover dark:hover:bg-primary/90 text-primary-foreground aspect-square font-semibold flex gap-x-2 items-center !important;
+    @apply flex aspect-square items-center gap-x-2 bg-primary font-semibold text-primary-foreground hover:bg-phantom-hover dark:hover:bg-primary/90 !important;
   }
 }

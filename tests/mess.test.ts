@@ -1,12 +1,12 @@
-import { beforeAll, describe, expect, test } from "bun:test";
-import { AnchorError, Program } from "@coral-xyz/anchor";
-import { Keypair, PublicKey, SystemProgram } from "@solana/web3.js";
-import { Mess } from "../target/types/mess";
-import { ProgramTestContext, startAnchor } from "solana-bankrun";
-import { BankrunProvider } from "anchor-bankrun";
-import IDL from "../target/idl/mess.json";
+import { beforeAll, describe, expect, test } from 'bun:test';
+import { AnchorError, Program } from '@coral-xyz/anchor';
+import { Keypair, PublicKey, SystemProgram } from '@solana/web3.js';
+import { Mess } from '../target/types/mess';
+import { ProgramTestContext, startAnchor } from 'solana-bankrun';
+import { BankrunProvider } from 'anchor-bankrun';
+import IDL from '../target/idl/mess.json';
 
-describe("mess", () => {
+describe('mess', () => {
   let context: ProgramTestContext;
   let provider: BankrunProvider;
   let payer: Keypair;
@@ -15,32 +15,33 @@ describe("mess", () => {
   const anotherAccount = Keypair.generate();
 
   beforeAll(async () => {
-    context = await startAnchor("", [], [
-      {
-        address: anotherAccount.publicKey,
-        info: {
-          lamports: 1_000_000_000,
-          data: Buffer.alloc(0),
-          owner: SystemProgram.programId,
-          executable: false
-        }
-      }
-    ]);
-    
+    context = await startAnchor(
+      '',
+      [],
+      [
+        {
+          address: anotherAccount.publicKey,
+          info: {
+            lamports: 1_000_000_000,
+            data: Buffer.alloc(0),
+            owner: SystemProgram.programId,
+            executable: false,
+          },
+        },
+      ]
+    );
+
     provider = new BankrunProvider(context);
     payer = context.payer;
     program = new Program(IDL as Mess, provider);
 
     [chatPDA] = PublicKey.findProgramAddressSync(
-      [
-        Buffer.from("global"),
-        payer.publicKey.toBuffer()
-      ],
+      [Buffer.from('global'), payer.publicKey.toBuffer()],
       program.programId
     );
   });
 
-  test("initializes chat", async () => {
+  test('initializes chat', async () => {
     await program.methods
       .init()
       .accounts({
@@ -52,10 +53,10 @@ describe("mess", () => {
     const chat = await program.account.chat.fetch(chatPDA);
 
     expect(chat.messages).toEqual([]);
-  })
+  });
 
-  test("sends message", async () => {
-    const message = "Hello world";
+  test('sends message', async () => {
+    const message = 'Hello world';
 
     await program.methods
       .send(message)
@@ -72,8 +73,8 @@ describe("mess", () => {
     expect(chat.messages[0].text).toEqual(message);
   });
 
-  test("sends message from another account", async () => {
-    const message = "Hey there";
+  test('sends message from another account', async () => {
+    const message = 'Hey there';
 
     await program.methods
       .send(message)
@@ -90,7 +91,7 @@ describe("mess", () => {
     expect(chat.messages[1].text).toEqual(message);
   });
 
-  test("throws an error when text is too long", async () => {
+  test('throws an error when text is too long', async () => {
     const veryLongText = 'a'.repeat(256);
 
     try {
@@ -104,12 +105,12 @@ describe("mess", () => {
         .rpc();
     } catch (e) {
       expect(e).toBeInstanceOf(AnchorError);
-      expect(e.error.errorCode.code).toEqual("TextTooLong");
+      expect(e.error.errorCode.code).toEqual('TextTooLong');
       expect(e.error.errorCode.number).toEqual(6000);
     }
   });
 
-  test("throws an error when text is empty", async () => {
+  test('throws an error when text is empty', async () => {
     try {
       await program.methods
         .send('')
@@ -121,7 +122,7 @@ describe("mess", () => {
         .rpc();
     } catch (e) {
       expect(e).toBeInstanceOf(AnchorError);
-      expect(e.error.errorCode.code).toEqual("TextEmpty");
+      expect(e.error.errorCode.code).toEqual('TextEmpty');
       expect(e.error.errorCode.number).toEqual(6001);
     }
   });
