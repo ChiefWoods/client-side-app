@@ -11,9 +11,10 @@ import {
 } from '@solana/wallet-adapter-wallets';
 import { ReactNode, useMemo } from 'react';
 import '@solana/wallet-adapter-react-ui/styles.css';
+import { connection } from '@/lib/constants';
 
 export default function SolanaProvider({ children }: { children: ReactNode }) {
-  const endpoint = useMemo(() => import.meta.env.VITE_RPC_URL, []);
+  const endpoint = useMemo(() => connection.rpcEndpoint, []);
   const wallets = useMemo(
     () => [
       new PhantomWalletAdapter(),

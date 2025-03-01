@@ -20,14 +20,17 @@ Messaging dApp for Solana Curriculum in [freeCodeCampWeb3](https://web3.freecode
 
 ### Libraries
 
+- [solana-bankrun](https://kevinheavey.github.io/solana-bankrun/)
+- [anchor-bankrun](https://kevinheavey.github.io/solana-bankrun/)
+- [@solana/web3.js](https://solana-labs.github.io/solana-web3.js/)
+- [@solana/wallet-adapter-react](https://github.com/anza-xyz/wallet-adapter)
+- [@coral-xyz/anchor](https://www.anchor-lang.com/)
 - [shadcn/ui](https://ui.shadcn.com/)
 - [Zod](https://zod.dev/)
-- [@solana/web3.js](https://solana-labs.github.io/solana-web3.js/)
-- [Solana Wallet Adapter](https://github.com/anza-xyz/wallet-adapter)
 
 ### Crates
 
-- [anchor-lang](https://docs.rs/anchor-lang/0.30.1/anchor_lang/index.html)
+- [anchor-lang](https://docs.rs/anchor-lang/latest/anchor_lang/)
 
 ### Runtime and Test Runner
 

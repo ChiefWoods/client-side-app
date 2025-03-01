@@ -1,10 +1,4 @@
 {
-  "type": "module",
-  "license": "ISC",
-  "scripts": {
-    "lint:fix": "prettier */*.js \"*/**/*{.js,.ts}\" -w",
-    "lint": "prettier */*.js \"*/**/*{.js,.ts}\" --check"
-  },
   "devDependencies": {
     "@coral-xyz/anchor": "^0.30.1",
     "@solana/web3.js": "^1.98.0",
@@ -16,5 +10,14 @@
     "solana-bankrun": "^0.4.0",
     "typescript": "^4.9.5"
   },
-  "packageManager": "bun@1.2.4"
+  "license": "ISC",
+  "packageManager": "bun@1.2.4",
+  "scripts": {
+    "lint:fix": "prettier */*.js \"*/**/*{.js,.ts}\" -w",
+    "lint": "prettier */*.js \"*/**/*{.js,.ts}\" --check"
+  },
+  "type": "module",
+  "workspaces": [
+    "app"
+  ]
 }

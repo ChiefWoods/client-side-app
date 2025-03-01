@@ -8,6 +8,7 @@ import {
 import { useCallback, useMemo, useState } from 'react';
 import idl from '@/idl/mess.json';
 import { PublicKey, TransactionInstruction } from '@solana/web3.js';
+import { Chat } from '@/types/accounts';
 
 export function useAnchorProgram() {
   const { connection } = useConnection();
@@ -32,31 +33,50 @@ export function useAnchorProgram() {
     );
   }, [connection, wallet]);
 
-  async function getInitIx(): Promise<TransactionInstruction> {
+  async function getInitIx(payer: PublicKey): Promise<TransactionInstruction> {
     return await program.methods
       .init()
       .accounts({
-        payer: wallet.publicKey!,
+        payer,
       })
       .instruction();
   }
 
   async function getSendIx(
     text: string,
-    chatPda: PublicKey
+    chatPda: PublicKey,
+    sender: PublicKey
   ): Promise<TransactionInstruction> {
     return await program.methods
       .send(text)
       .accounts({
         chat: chatPda!,
-        sender: wallet.publicKey!,
+        sender,
       })
       .instruction();
   }
 
-  const getChatAcc = useCallback(
+  const fetchChatAcc = useCallback(
     async (chatPda: PublicKey) => {
       return await program.account.chat.fetchNullable(chatPda);
+    },
+    [program]
+  );
+
+  const getChatSubscription = useCallback(
+    (chatPda: PublicKey, setChatAcc: (chatAcc: Chat) => void) => {
+      const eventEmitter = program.account.chat.subscribe(chatPda);
+
+      eventEmitter.on('change', (acc) => {
+        setChatAcc(acc);
+      });
+
+      return {
+        unsubscribe: () => {
+          eventEmitter.off('change', setChatAcc);
+          program.account.chat.unsubscribe(chatPda);
+        },
+      };
     },
     [program]
   );
@@ -64,6 +84,7 @@ export function useAnchorProgram() {
   return {
     getInitIx,
     getSendIx,
-    getChatAcc,
+    fetchChatAcc,
+    getChatSubscription,
   };
 }

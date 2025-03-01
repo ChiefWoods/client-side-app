@@ -18,32 +18,30 @@ import {
   SendHorizonal,
 } from 'lucide-react';
 import { useEffect, useRef, useState } from 'react';
-import { Message, MessageGroup } from '@/types/message';
-import {
-  getTransactionLink,
-  setComputeUnitLimitAndPrice,
-  truncateAddress,
-} from '@/lib/utils';
+import { MessageGroup } from '@/types/message';
+import { truncateAddress } from '@/lib/utils';
 import { z } from 'zod';
 import { messageFormSchema } from '@/lib/schemas';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
-import { PublicKey } from '@solana/web3.js';
-import { Spinner, Text, TransactionToast } from '.';
 import { TooltipTrigger } from '@radix-ui/react-tooltip';
-import { useAnchorProgram } from '@/hooks';
 import { toast } from 'sonner';
+import { buildTx, getTransactionLink } from '@/lib/helpers';
+import { confirmTransaction } from '@solana-developers/helpers';
+import { useAnchorProgram } from '@/hooks/useAnchorProgram';
+import TransactionToast from './transaction-toast';
+import Text from './text';
+import Spinner from './spinner';
+import { useChat } from './chat-provider';
 
-export default function Chat({ chatPda }: { chatPda: PublicKey | null }) {
+export default function Chat() {
   const { publicKey, connecting, connected, sendTransaction } = useWallet();
   const { connection } = useConnection();
-  const { getInitIx, getSendIx, getChatAcc } = useAnchorProgram();
-  const [doesChatroomExist, setDoesChatroomExist] = useState<boolean>(false);
-  const [messages, setMessages] = useState<Message[]>([]);
+  const { getInitIx, getSendIx } = useAnchorProgram();
+  const { isLoading, mutate, chatPda, chatAcc } = useChat();
   const [messageGroup, setMessageGroup] = useState<MessageGroup[]>([]);
   const [isCopied, setIsCopied] = useState<boolean>(false);
-  const [isCreatingChatroom, setIsCreatingChatroom] = useState<boolean>(false);
-  const [isLoadingChat, setIsLoadingChat] = useState<boolean>(false);
+  const [isFormDisabled, setIsFormDisabled] = useState<boolean>(false);
   const chatSection = useRef<HTMLDivElement>(null);
 
   const messageForm = useForm<z.infer<typeof messageFormSchema>>({
@@ -62,45 +60,33 @@ export default function Chat({ chatPda }: { chatPda: PublicKey | null }) {
   }
 
   async function createChatroom() {
-    if (chatPda && publicKey) {
+    if (publicKey) {
       toast.promise(
         async () => {
-          setIsCreatingChatroom(true);
-          const ix = await getInitIx();
-          const tx = await setComputeUnitLimitAndPrice(
-            connection,
-            [ix],
-            publicKey,
-            []
-          );
-          const { blockhash, lastValidBlockHeight } =
-            await connection.getLatestBlockhash();
+          setIsFormDisabled(true);
 
-          tx.recentBlockhash = blockhash;
-          tx.lastValidBlockHeight = lastValidBlockHeight;
+          const tx = await buildTx([await getInitIx(publicKey)], publicKey);
 
           const signature = await sendTransaction(tx, connection);
 
-          await connection.confirmTransaction({
-            blockhash,
-            lastValidBlockHeight,
-            signature,
-          });
-
-          return signature;
+          return await confirmTransaction(connection, signature);
         },
         {
           loading: 'Waiting for signature...',
-          success: (data) => {
-            setDoesChatroomExist(true);
-            setIsCreatingChatroom(false);
-            const link = getTransactionLink(data);
+          success: (signature) => {
+            mutate();
+            setIsFormDisabled(false);
 
-            return <TransactionToast title="Chatroom created." link={link} />;
+            return (
+              <TransactionToast
+                title="Chatroom created."
+                link={getTransactionLink(signature)}
+              />
+            );
           },
           error: (err) => {
             console.error(err);
-            setIsCreatingChatroom(false);
+            setIsFormDisabled(false);
             return err.message;
           },
         }
@@ -111,28 +97,16 @@ export default function Chat({ chatPda }: { chatPda: PublicKey | null }) {
   async function sendMessage(values: z.infer<typeof messageFormSchema>) {
     if (chatPda && publicKey) {
       try {
-        const ix = await getSendIx(values.message.trim(), chatPda);
-        const tx = await setComputeUnitLimitAndPrice(
-          connection,
-          [ix],
-          publicKey,
-          []
+        const tx = await buildTx(
+          [await getSendIx(values.message.trim(), chatPda, publicKey)],
+          publicKey
         );
-        const { blockhash, lastValidBlockHeight } =
-          await connection.getLatestBlockhash();
-
-        tx.recentBlockhash = blockhash;
-        tx.lastValidBlockHeight = lastValidBlockHeight;
 
         const signature = await sendTransaction(tx, connection);
 
-        await connection.confirmTransaction({
-          blockhash,
-          lastValidBlockHeight,
-          signature,
-        });
+        await confirmTransaction(connection, signature);
 
-        setMessages([...messages, { sender: publicKey, text: values.message }]);
+        mutate();
         messageForm.reset();
         messageForm.setFocus('message');
       } catch (err) {
@@ -152,61 +126,41 @@ export default function Chat({ chatPda }: { chatPda: PublicKey | null }) {
   }, [connected]);
 
   useEffect(() => {
-    (async () => {
-      if (chatPda) {
-        setIsLoadingChat(true);
+    if (chatAcc) {
+      try {
+        const messageGroup: MessageGroup[] = [];
+        let currentSender: string = '';
+        let currentGroup: string[] = [];
 
-        const chatAcc = await getChatAcc(chatPda);
+        const messages = chatAcc.messages;
 
-        if (chatAcc) {
-          setMessages(chatAcc.messages);
-          setDoesChatroomExist(true);
-        } else {
-          setMessages([]);
-          setDoesChatroomExist(false);
-        }
-
-        setIsLoadingChat(false);
-      }
-    })();
-  }, [chatPda, setIsLoadingChat, getChatAcc]);
-
-  useEffect(() => {
-    (async () => {
-      if (chatPda) {
-        try {
-          const messageGroup: MessageGroup[] = [];
-          let currentSender: string = '';
-          let currentGroup: string[] = [];
-
-          messages.forEach(({ sender, text }, i) => {
-            if (currentSender === sender.toBase58()) {
-              currentGroup.push(text);
-            } else {
-              if (currentGroup.length) {
-                messageGroup.push({
-                  sender: currentSender,
-                  texts: currentGroup,
-                });
-              }
-
-              currentSender = sender.toBase58();
-              currentGroup = [text];
+        messages.forEach(({ sender, text }, i) => {
+          if (currentSender === sender.toBase58()) {
+            currentGroup.push(text);
+          } else {
+            if (currentGroup.length) {
+              messageGroup.push({
+                sender: currentSender,
+                texts: currentGroup,
+              });
             }
 
-            if (i === messages.length - 1) {
-              messageGroup.push({ sender: currentSender, texts: currentGroup });
-            }
-          });
+            currentSender = sender.toBase58();
+            currentGroup = [text];
+          }
 
-          setMessageGroup(messageGroup);
-        } catch (err) {
-          console.error(err);
-          setMessageGroup([]);
-        }
+          if (i === messages.length - 1) {
+            messageGroup.push({ sender: currentSender, texts: currentGroup });
+          }
+        });
+
+        setMessageGroup(messageGroup);
+      } catch (err) {
+        console.error(err);
+        setMessageGroup([]);
       }
-    })();
-  }, [chatPda, messages]);
+    }
+  }, [chatAcc]);
 
   useEffect(() => {
     if (messageGroup.length) {
@@ -218,37 +172,12 @@ export default function Chat({ chatPda }: { chatPda: PublicKey | null }) {
   }, [messageGroup]);
 
   useEffect(() => {
-    let subscriptionId: number | null = null;
-
-    (async () => {
-      if (chatPda) {
-        subscriptionId = connection.onAccountChange(chatPda, async () => {
-          try {
-            const chatAcc = await getChatAcc(chatPda);
-            const messages = chatAcc?.messages || [];
-            setMessages(messages);
-          } catch (err) {
-            console.error(err);
-            setMessages([]);
-          }
-        });
-      }
-    })();
-
-    return () => {
-      if (subscriptionId) {
-        connection.removeAccountChangeListener(subscriptionId);
-      }
-    };
-  }, [chatPda, connection, getChatAcc]);
-
-  useEffect(() => {
-    if (chatPda && doesChatroomExist) {
+    if (chatPda && chatAcc) {
       document.title = `Mess | ${truncateAddress(chatPda.toBase58())}`;
     } else {
       document.title = 'Mess';
     }
-  }, [chatPda, doesChatroomExist]);
+  }, [chatPda, chatAcc]);
 
   useEffect(() => {
     if (messageForm.formState.errors.message) {
@@ -268,9 +197,9 @@ export default function Chat({ chatPda }: { chatPda: PublicKey | null }) {
         {connecting ? (
           <Text content="Connecting..." />
         ) : publicKey ? (
-          isLoadingChat ? (
+          isLoading ? (
             <Spinner />
-          ) : chatPda && doesChatroomExist ? (
+          ) : chatPda && chatAcc ? (
             <>
               <div className="flex w-full items-center gap-x-2">
                 <h2 className="text-2xl font-semibold text-primary sm:text-3xl">
@@ -296,10 +225,10 @@ export default function Chat({ chatPda }: { chatPda: PublicKey | null }) {
                 </Button>
               </div>
               <section
-                className={`flex h-0 w-full grow flex-col items-center gap-y-2 overflow-y-auto ${messages.length ? 'justify-start' : 'justify-center'}`}
+                className={`flex h-0 w-full grow flex-col items-center gap-y-2 overflow-y-auto ${chatAcc.messages.length ? 'justify-start' : 'justify-center'}`}
                 ref={chatSection}
               >
-                {messages.length ? (
+                {chatAcc.messages.length ? (
                   messageGroup.map(({ sender, texts }, i) => {
                     const isSelf = sender === publicKey.toBase58();
 
@@ -343,9 +272,9 @@ export default function Chat({ chatPda }: { chatPda: PublicKey | null }) {
               <Button
                 className="btn p-4"
                 onClick={createChatroom}
-                disabled={isCreatingChatroom}
+                disabled={isFormDisabled}
               >
-                {isCreatingChatroom ? (
+                {isFormDisabled ? (
                   <LoaderCircle size={16} className="animate-spin" />
                 ) : (
                   <Plus size={16} />
@@ -358,7 +287,7 @@ export default function Chat({ chatPda }: { chatPda: PublicKey | null }) {
           <Text content="Connect Your Wallet" />
         )}
       </main>
-      {publicKey && doesChatroomExist && !isLoadingChat && (
+      {publicKey && chatAcc && !isLoading && (
         <Form {...messageForm}>
           <form
             className="flex w-full gap-x-2 pb-4"

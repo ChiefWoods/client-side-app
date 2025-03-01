@@ -1,7 +1,6 @@
-import { Connection, PublicKey } from '@solana/web3.js';
+import { PublicKey } from '@solana/web3.js';
 import { z } from 'zod';
-
-const connection = new Connection(import.meta.env.VITE_RPC_URL);
+import { connection } from './constants';
 
 export const messageFormSchema = z.object({
   message: z

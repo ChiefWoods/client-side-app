@@ -1,14 +1,24 @@
-import { Chat, Header, ThemeProvider } from './components';
+import Chat from './components/chat';
+import ChatProvider from './components/chat-provider';
+import Header from './components/header';
+import SolanaProvider from './components/solana-provider';
+import ThemeProvider from './components/theme-provider';
 import { Toaster } from './components/ui';
-import { useChatPda } from './hooks';
+import { SWRConfig } from 'swr';
 
 export default function App() {
-  const { chatPda, setChatPda } = useChatPda();
-
   return (
-    <ThemeProvider defaultTheme="light" storageKey="vite-ui-theme">
-      <Header setChatPda={setChatPda} />
-      <Chat chatPda={chatPda} />
+    <>
+      <SWRConfig value={{ suspense: false, revalidateOnFocus: false }}>
+        <ThemeProvider defaultTheme="light" storageKey="vite-ui-theme">
+          <SolanaProvider>
+            <ChatProvider>
+              <Header />
+              <Chat />
+            </ChatProvider>
+          </SolanaProvider>
+        </ThemeProvider>
+      </SWRConfig>
       <Toaster
         richColors
         closeButton
@@ -22,6 +32,6 @@ export default function App() {
           },
         }}
       />
-    </ThemeProvider>
+    </>
   );
 }

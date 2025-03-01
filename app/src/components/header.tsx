@@ -7,16 +7,15 @@ import { searchFormSchema } from '@/lib/schemas';
 import { z } from 'zod';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { useEffect, useState } from 'react';
-import { ModeToggle, SearchBar } from '.';
-import { deriveChatPda } from '@/lib/utils';
 import { PublicKey } from '@solana/web3.js';
+import { getChatPda } from '@/lib/pda';
+import SearchBar from './search-bar';
+import ModeToggle from './mode-toggle';
+import { useChat } from './chat-provider';
 
-export default function Header({
-  setChatPda,
-}: {
-  setChatPda: (chatPda: PublicKey) => void;
-}) {
+export default function Header() {
   const { publicKey, connected } = useWallet();
+  const { setChatPda } = useChat();
   const [isMobile, setIsMobile] = useState<boolean>(window.innerWidth < 640);
   const [isSearchExpanded, setIsSearchExpanded] = useState<boolean>(false);
 
@@ -29,7 +28,7 @@ export default function Header({
 
   function showDefaultChatroom() {
     if (publicKey) {
-      setChatPda(deriveChatPda(publicKey));
+      setChatPda(getChatPda(publicKey));
     }
   }
 
@@ -38,16 +37,16 @@ export default function Header({
     searchForm.reset();
   }
 
-  useEffect(() => {
-    function handleResize() {
-      const belowBreakpoint = window.innerWidth < 640;
-      setIsMobile(belowBreakpoint);
+  function handleResize() {
+    const belowBreakpoint = window.innerWidth < 640;
+    setIsMobile(belowBreakpoint);
 
-      if (!belowBreakpoint) {
-        setIsSearchExpanded(false);
-      }
+    if (!belowBreakpoint) {
+      setIsSearchExpanded(false);
     }
+  }
 
+  useEffect(() => {
     handleResize();
 
     window.addEventListener('resize', handleResize);
