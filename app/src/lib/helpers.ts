@@ -4,6 +4,7 @@ import {
 } from '@solana-developers/helpers';
 import { connection } from './constants';
 import {
+  AddressLookupTableAccount,
   ComputeBudgetProgram,
   PublicKey,
   TransactionInstruction,
@@ -12,12 +13,20 @@ import {
 } from '@solana/web3.js';
 
 export async function buildTx(ixs: TransactionInstruction[], payer: PublicKey) {
-  const latPubkey = import.meta.env.VITE_MESS_LAT;
-  const lat = (await connection.getAddressLookupTable(new PublicKey(latPubkey)))
-    .value;
-  const latArr = lat ? [lat] : [];
+  const altPubkey = import.meta.env.VITE_ADDRESS_LOOKUP_TABLE;
+  const alt: AddressLookupTableAccount[] = [];
 
-  const units = await getSimulationComputeUnits(connection, ixs, payer, latArr);
+  if (altPubkey) {
+    const { value } = await connection.getAddressLookupTable(
+      new PublicKey(altPubkey)
+    );
+
+    if (value) {
+      alt.push(value);
+    }
+  }
+
+  const units = await getSimulationComputeUnits(connection, ixs, payer, alt);
 
   if (!units) {
     throw new Error('Unable to get compute limits.');
@@ -45,7 +54,7 @@ export async function buildTx(ixs: TransactionInstruction[], payer: PublicKey) {
     payerKey: payer,
     recentBlockhash: (await connection.getLatestBlockhash()).blockhash,
     instructions: ixsWithCompute,
-  }).compileToV0Message(latArr);
+  }).compileToV0Message(alt);
 
   return new VersionedTransaction(messageV0);
 }
