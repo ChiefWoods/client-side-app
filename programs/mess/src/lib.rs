@@ -29,10 +29,10 @@ pub struct Init<'info> {
     pub payer: Signer<'info>,
     #[account(
         init,
-        space = Chat::MIN_SPACE,
+        payer = payer,
+        space = Chat::DISCRIMINATOR.len() + Chat::MIN_SPACE,
         seeds = [b"global", payer.key.as_ref()],
         bump,
-        payer = payer,
     )]
     pub chat: Account<'info, Chat>,
     pub system_program: Program<'info, System>,
@@ -59,7 +59,7 @@ pub struct Chat {
 }
 
 impl Chat {
-    pub const MIN_SPACE: usize = Chat::DISCRIMINATOR.len() + 4;
+    pub const MIN_SPACE: usize = 4;
 }
 
 #[derive(AnchorSerialize, AnchorDeserialize, Clone)]

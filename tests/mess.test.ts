@@ -1,18 +1,26 @@
 import { beforeAll, describe, expect, test } from 'bun:test';
 import { AnchorError, Program } from '@coral-xyz/anchor';
-import { Keypair, PublicKey, SystemProgram } from '@solana/web3.js';
+import {
+  Keypair,
+  LAMPORTS_PER_SOL,
+  PublicKey,
+  SystemProgram,
+} from '@solana/web3.js';
 import { Mess } from '../target/types/mess';
 import { ProgramTestContext, startAnchor } from 'solana-bankrun';
 import { BankrunProvider } from 'anchor-bankrun';
-import IDL from '../target/idl/mess.json';
+import idl from '../target/idl/mess.json';
 
 describe('mess', () => {
-  let context: ProgramTestContext;
-  let provider: BankrunProvider;
-  let payer: Keypair;
-  let program: Program<Mess>;
+  let { context, provider, program } = {} as {
+    context: ProgramTestContext;
+    provider: BankrunProvider;
+    program: Program<Mess>;
+  };
+
   let chatPDA: PublicKey;
-  const anotherAccount = Keypair.generate();
+
+  const walletA = Keypair.generate();
 
   beforeAll(async () => {
     context = await startAnchor(
@@ -20,9 +28,9 @@ describe('mess', () => {
       [],
       [
         {
-          address: anotherAccount.publicKey,
+          address: walletA.publicKey,
           info: {
-            lamports: 1_000_000_000,
+            lamports: LAMPORTS_PER_SOL,
             data: Buffer.alloc(0),
             owner: SystemProgram.programId,
             executable: false,
@@ -32,11 +40,10 @@ describe('mess', () => {
     );
 
     provider = new BankrunProvider(context);
-    payer = context.payer;
-    program = new Program(IDL as Mess, provider);
+    program = new Program(idl as Mess, provider);
 
     [chatPDA] = PublicKey.findProgramAddressSync(
-      [Buffer.from('global'), payer.publicKey.toBuffer()],
+      [Buffer.from('global'), context.payer.publicKey.toBuffer()],
       program.programId
     );
   });
@@ -45,9 +52,9 @@ describe('mess', () => {
     await program.methods
       .init()
       .accounts({
-        payer: payer.publicKey,
+        payer: context.payer.publicKey,
       })
-      .signers([payer])
+      .signers([context.payer])
       .rpc();
 
     const chat = await program.account.chat.fetch(chatPDA);
@@ -57,37 +64,39 @@ describe('mess', () => {
 
   test('sends message', async () => {
     const message = 'Hello world';
+    const sender = context.payer.publicKey;
 
     await program.methods
       .send(message)
       .accounts({
         chat: chatPDA,
-        sender: payer.publicKey,
+        sender,
       })
-      .signers([payer])
+      .signers([context.payer])
       .rpc();
 
     const chat = await program.account.chat.fetch(chatPDA);
 
-    expect(chat.messages[0].sender).toEqual(payer.publicKey);
+    expect(chat.messages[0].sender).toEqual(sender);
     expect(chat.messages[0].text).toEqual(message);
   });
 
-  test('sends message from another account', async () => {
+  test('sends message from another wallet', async () => {
     const message = 'Hey there';
+    const sender = walletA.publicKey;
 
     await program.methods
       .send(message)
       .accounts({
         chat: chatPDA,
-        sender: anotherAccount.publicKey,
+        sender: walletA.publicKey,
       })
-      .signers([anotherAccount])
+      .signers([walletA])
       .rpc();
 
     const chat = await program.account.chat.fetch(chatPDA);
 
-    expect(chat.messages[1].sender).toEqual(anotherAccount.publicKey);
+    expect(chat.messages[1].sender).toEqual(sender);
     expect(chat.messages[1].text).toEqual(message);
   });
 
@@ -99,14 +108,16 @@ describe('mess', () => {
         .send(veryLongText)
         .accounts({
           chat: chatPDA,
-          sender: payer.publicKey,
+          sender: context.payer.publicKey,
         })
-        .signers([payer])
+        .signers([context.payer])
         .rpc();
-    } catch (e) {
-      expect(e).toBeInstanceOf(AnchorError);
-      expect(e.error.errorCode.code).toEqual('TextTooLong');
-      expect(e.error.errorCode.number).toEqual(6000);
+    } catch (err) {
+      expect(err).toBeInstanceOf(AnchorError);
+
+      const { error } = err as AnchorError;
+      expect(error.errorCode.code).toEqual('TextTooLong');
+      expect(error.errorCode.number).toEqual(6000);
     }
   });
 
@@ -116,14 +127,16 @@ describe('mess', () => {
         .send('')
         .accounts({
           chat: chatPDA,
-          sender: payer.publicKey,
+          sender: context.payer.publicKey,
         })
-        .signers([payer])
+        .signers([context.payer])
         .rpc();
-    } catch (e) {
-      expect(e).toBeInstanceOf(AnchorError);
-      expect(e.error.errorCode.code).toEqual('TextEmpty');
-      expect(e.error.errorCode.number).toEqual(6001);
+    } catch (err) {
+      expect(err).toBeInstanceOf(AnchorError);
+
+      const { error } = err as AnchorError;
+      expect(error.errorCode.code).toEqual('TextEmpty');
+      expect(error.errorCode.number).toEqual(6001);
     }
   });
 });
